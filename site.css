@@ -133,10 +133,11 @@ header #header-buttons {
 
 header a.button {
     display: inline-block;
-    border: 3px solid #00C7FF;
+    border: 1px solid #00C7FF;
     border-radius: 5px;
     padding: 0.5rem;
-    color: #00C7FF !important;
+    background: #00C7FF;
+    color: black !important;
     text-decoration: none !important;
 }
 header a.button-small {
@@ -145,8 +146,7 @@ header a.button-small {
 }
 
 header a.button:hover, header a.button:active, header a.button:focus {
-    background: #00C7FF;
-    color: black !important;
+    background: white;
 }
 
 /* responsive elements: we usually just put a large-scale logo in the center
