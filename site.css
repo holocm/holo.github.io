@@ -1,0 +1,170 @@
+@font-face {
+  font-family: 'Montserrat';
+  font-style: normal;
+  font-weight: 400;
+  src: local('Montserrat-Regular'), url(font/montserrat-400.ttf) format('truetype');
+}
+
+@font-face {
+  font-family: 'Montserrat';
+  font-style: normal;
+  font-weight: 700;
+  src: local('Montserrat-Bold'), url(font/montserrat-700.ttf) format('truetype');
+}
+
+html {
+    margin: 0;
+    padding: 0;
+    font-family: 'Montserrat', sans-serif;
+}
+
+body {
+    background: #EEE;
+    color: black;
+    margin: 0;
+    padding: 0;
+}
+
+.fixed-width {
+    max-width: 980px;
+    margin: 0 auto;
+    padding: 0 0.5rem;
+}
+
+.clearfix {
+    clear: both;
+}
+.clearfix::after, .clearfix::before {
+    display: table;
+    content: "";
+}
+
+/*******************************************************************************
+ * common page header
+ */
+
+header {
+    background: black;
+    color: #00C7FF;
+    box-shadow: 0 0 6px -3px black;
+    text-align: center;
+    min-height: 64px;
+    position: relative;
+}
+
+#header-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 64px;
+}
+
+header #header-icon, header #header-buttons {
+    height: 0px;
+    line-height: 64px;
+    overflow: visible;
+}
+
+header #header-icon {
+    text-align: left;
+    margin-left: -1rem;
+}
+header #header-buttons {
+    text-align: right;
+}
+
+#header-buttons a {
+    font-size: 2rem;
+    color: inherit !important;
+    text-decoration: none !important;
+    margin: 0 0.5rem;
+}
+
+#header-buttons a:hover, #header-buttons a:active, #header-buttons a:focus {
+    color: white !important;
+}
+
+/*******************************************************************************
+ * page header, additional rules for index.html
+ */
+
+#pitch-container {
+    min-height: 100vh;
+    font-size: 1.5rem;
+    line-height: 100vh;
+}
+#pitch-content {
+    display: inline-block;
+    vertical-align: middle;
+    line-height: normal;
+    padding-top: 64px; /* don't collide with the #header-container */
+    padding-bottom: 3rem; /* don't collide with #plz-scroll */
+}
+
+#pitch-content table {
+    width: 100%;
+}
+#pitch-content td.logo {
+    width: 25%;
+}
+#pitch-content td.logo img {
+    width: 100%;
+}
+#pitch-content td.pitch p {
+    font-size: 2rem;
+    margin: 0;
+}
+#pitch-content td.pitch p + p {
+    font-size: 3rem;
+    margin-top: 0.5rem;
+}
+
+#pitch-content p#plz-scroll {
+    position: absolute;
+    left: 0;
+    bottom: 1rem;
+    width: 100%;
+    font-size: 1rem;
+    margin: 0;
+    padding: 0 1rem;
+    box-sizing: border-box;
+}
+
+header a.button {
+    display: inline-block;
+    border: 3px solid #00C7FF;
+    border-radius: 5px;
+    padding: 0.5rem;
+    color: #00C7FF !important;
+    text-decoration: none !important;
+}
+header a.button-small {
+    font-size: 1rem;
+    padding: 0.3rem;
+}
+
+header a.button:hover, header a.button:active, header a.button:focus {
+    background: #00C7FF;
+    color: black !important;
+}
+
+/* responsive elements: we usually just put a large-scale logo in the center
+ * and remove the #header-icon, but don't do that on small screens */
+@media (min-width: 980px) {
+    #header-icon {
+        display: none;
+    }
+}
+@media (max-width: 979px) {
+    #pitch-content td.logo {
+        width: 0%;
+        display: none;
+    }
+}
+/* on small screens, dial down the fontsizes a bit */
+@media (max-height: 40rem) and (max-width: 700px) {
+    #pitch-container            { font-size: 1rem }
+    #pitch-content td.pitch p   { font-size: 1.5rem }
+    #pitch-content td.pitch p+p { font-size: 2rem }
+}
