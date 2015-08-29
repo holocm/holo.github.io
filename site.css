@@ -178,6 +178,21 @@ section {
     color: black;
 }
 
+section pre {
+    padding-left: 2rem;
+}
+
+section a {
+    /* the blue highlight needs to be a bit darker to look the same against a
+     * light background */
+    color: #00A7D0 !important;
+    text-decoration: none !important;
+}
+
+section a:hover, section a:active, section a:focus {
+    text-decoration: underline !important;
+}
+
 /*******************************************************************************
  * footer
  */
@@ -192,5 +207,5 @@ footer a {
 }
 
 footer a:hover, footer a:active, footer a:focus {
-    color: white !important;
+    text-decoration: underline !important;
 }

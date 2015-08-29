@@ -39,7 +39,20 @@
         add a section#features where Holo is compared to package management alone. -->
     <section id="documentation">
         <div class="fixed-width clearfix">
-            <p>TODO: user documentation</p>
+            <h1>Installation</h1>
+            <p>The recommended method, if possible, is to install Holo as a package.</p>
+            <ul>
+                <li>Arch Linux users can use the <a href="https://aur.archlinux.org/packages/holo">AUR package</a>.</li>
+                <li>If you have packaged Holo for your distribution, please <a href="https://github.com/majewsky/holo-website/issues/new">send me a link</a> that I can add to this list.</li>
+            </ul>
+            <p>Alternatively, to install from source, clone the Git repository and build the master branch:</p>
+            <pre>
+$ git clone https://github.com/majewsky/holo.git
+$ cd holo
+$ make
+$ make check
+$ sudo make install</pre>
+            <p>You need <a href="https://golang.org">Go</a> to compile Holo and <a href="https://www.perl.org">Perl</a> to run the testcase. Packages are available for all distributions.</p>
         </div>
     </section>
     <footer>
