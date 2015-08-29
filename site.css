@@ -19,8 +19,8 @@ html {
 }
 
 body {
-    background: #EEE;
-    color: black;
+    background: black;
+    color: white;
     margin: 0;
     padding: 0;
 }
@@ -68,7 +68,7 @@ header #header-icon, header #header-buttons {
 
 header #header-icon {
     text-align: left;
-    margin-left: -1rem;
+    padding-left: 0;
 }
 header #header-buttons {
     text-align: right;
@@ -152,7 +152,7 @@ header a.button:hover, header a.button:active, header a.button:focus {
 /* responsive elements: we usually just put a large-scale logo in the center
  * and remove the #header-icon, but don't do that on small screens */
 @media (min-width: 980px) {
-    #header-icon {
+    header#pitch #header-icon {
         display: none;
     }
 }
@@ -167,4 +167,30 @@ header a.button:hover, header a.button:active, header a.button:focus {
     #pitch-container            { font-size: 1rem }
     #pitch-content td.pitch p   { font-size: 1.5rem }
     #pitch-content td.pitch p+p { font-size: 2rem }
+}
+
+/*******************************************************************************
+ * content
+ */
+
+section {
+    background: #EEE;
+    color: black;
+}
+
+/*******************************************************************************
+ * footer
+ */
+
+footer {
+    text-align: center;
+}
+
+footer a {
+    color: #00C7FF !important;
+    text-decoration: none !important;
+}
+
+footer a:hover, footer a:active, footer a:focus {
+    color: white !important;
 }
