@@ -44,16 +44,16 @@
                 <li>If you have packaged Holo for your distribution, please <a href="https://github.com/majewsky/majewsky.github.io/issues/new">send me a link</a> that I can add to this list.</li>
             </ul>
             <p>
-                Alternatively, to install from source, clone the Git repository
+                Alternatively, to install from source, clone the
+                <a href="https://github.com/majewsky/holo">Git repository</a>
                 and build the master branch:
             </p>
-            <p class="code">
-                <span>$ git clone <a href="https://github.com/majewsky/holo">https://github.com/majewsky/holo</a></span>
-                <span>$ cd holo</span>
-                <span>$ make</span>
-                <span>$ make check</span>
-                <span>$ sudo make install</span>
-            </p>
+            <pre>
+$ git clone https://github.com/majewsky/holo
+$ cd holo
+$ make
+$ make check
+$ sudo make install</pre>
             <p>
                 You need <a href="https://golang.org">Go</a> to compile Holo and
                 <a href="https://www.perl.org">Perl</a> to run the testcase.
@@ -95,44 +95,40 @@
                 installs a default configuration file, a hologram cannot
                 directly overwrite this configuration file.
             </p>
-            <p class="code">
-                <span>$ pacman -Qo /etc/nginx/nginx.conf</span>
-                <span>/etc/nginx/nginx.conf is owned by nginx 1.8.0-1</span>
-            </p>
+            <pre>
+$ pacman -Qo /etc/nginx/nginx.conf
+/etc/nginx/nginx.conf is owned by nginx 1.8.0-1</pre>
             <p>
                 Instead, Holo offers a configuration repository at
                 <tt>/holo/repo</tt> where the hologram can put its configuration
                 file.
             </p>
-            <p class="code">
-                <span>$ pacman -Qo /holo/repo/20-webserver/etc/nginx/nginx.conf</span>
-                <span>/holo/repo/20-webserver/etc/nginx/nginx.conf is owned by hologram-webserver 1.0.0-1</span>
-            </p>
+            <pre>
+$ pacman -Qo /holo/repo/20-webserver/etc/nginx/nginx.conf
+/holo/repo/20-webserver/etc/nginx/nginx.conf is owned by hologram-webserver 1.0.0-1</pre>
             <p>
                 The <tt>holo apply</tt> command is then used to install the
                 hologram's configuration file in the right place. Most package
                 management tools allow packages to carry post-install hooks for
                 this purpose.
             </p>
-            <p class="code">
-                <span>$ sudo holo apply</span>
-                <span>[holo] Working on /etc/nginx/nginx.conf</span>
-                <span>[holo]   store at /holo/backup/etc/nginx/nginx.conf</span>
-                <span>[holo]      apply /holo/repo/20-webserver/etc/nginx/nginx.conf</span>
-            </p>
+            <pre>
+$ sudo holo apply
+[holo] Working on /etc/nginx/nginx.conf
+[holo]   store at /holo/backup/etc/nginx/nginx.conf
+[holo]      apply /holo/repo/20-webserver/etc/nginx/nginx.conf</pre>
             <p>
                 Entries in the configuration repository follow a fixed naming scheme:
             </p>
-            <p class="code">
-                <span>/holo/repo/20-webserver/etc/nginx/nginx.conf</span>
-                <span> ^          ^            ^</span>
-                <span> |          |            |</span>
-                <span> |          |            +-- path to target</span>
-                <span> |          |</span>
-                <span> |          +-- disambiguator</span>
-                <span> |</span>
-                <span> +-- repository path</span>
-            </p>
+            <pre>
+/holo/repo/20-webserver/etc/nginx/nginx.conf
+ ^          ^            ^
+ |          |            |
+ |          |            +-- path to target
+ |          |
+ |          +-- disambiguator
+ |
+ +-- repository path</pre>
             <p>
                 The disambiguator is always required, and allows multiple
                 repository files to operate on the same target (sorted
@@ -164,59 +160,55 @@
                 configuration for Pacman, but enables the &quot;Color&quot;
                 option which is commented out in the default configuration.
             </p>
-            <p class="code">
-                <span>$ holo scan</span>
-                <span>...</span>
-                <span>/etc/pacman.conf</span>
-                <span>    store at /holo/backup/etc/pacman.conf</span>
-                <span>    passthru /holo/repo/20-enable-color/etc/pacman.conf.holoscript</span>
-                <span>...</span>
-                <span>$ cat /holo/repo/20-enable-color/etc/pacman.conf.holoscript</span>
-                <span>#!/bin/sh</span>
-                <span>sed 's/^#\s*Color$/Color/'
-            </p>
+            <pre>
+$ holo scan
+...
+/etc/pacman.conf
+    store at /holo/backup/etc/pacman.conf
+    passthru /holo/repo/20-enable-color/etc/pacman.conf.holoscript
+...
+$ cat /holo/repo/20-enable-color/etc/pacman.conf.holoscript
+#!/bin/sh
+sed 's/^#\s*Color$/Color/'</pre>
             <p>
                 The advantage of holoscripts over plain configuration files is
                 that when the default configuration is updated, you get the
                 updates as well during the next <tt>holo apply</tt>.
             </p>
-            <p class="code">
-                <span>$ sudo pacman -Syu</span>
-                <span>...</span>
-                <span>(3/8) upgrading pacman</span>
-                <span>warning: /etc/pacman.conf installed as /etc/pacman.conf.pacnew</span>
-                <span>...</span>
-            </p>
+            <pre>
+$ sudo pacman -Syu
+...
+(3/8) upgrading pacman
+warning: /etc/pacman.conf installed as /etc/pacman.conf.pacnew
+... </pre>
             <p>
                 In this example, the system update includes a new default
                 configuration, which is placed next to the currently used
                 configuration. Holo will recognize this and use the new default
                 configuration:
             </p>
-            <p class="code">
-                <span>$ sudo holo apply</span>
-                <span>...</span>
-                <span>[holo] Working on /etc/pacman.conf</span>
-                <span>[holo]     update /etc/pacman.conf.pacnew -&gt; /holo/backup/etc/pacman.conf</span>
-                <span>[holo]   passthru /holo/repo/20-enable-color/etc/pacman.conf.holoscript</span>
-                <span>...</span>
-            </p>
+            <pre>
+$ sudo holo apply
+...
+[holo] Working on /etc/pacman.conf
+[holo]     update /etc/pacman.conf.pacnew -&gt; /holo/backup/etc/pacman.conf
+[holo]   passthru /holo/repo/20-enable-color/etc/pacman.conf.holoscript
+... </pre>
             <p>
                 Another advantage is that multiple holoscripts can be chained.
                 Multiple holograms can thus modify the same default
                 configuration, or further specialize a base configuration
                 provided by a base hologram:
             </p>
-            <p class="code">
-                <span>$ holo scan</span>
-                <span>...</span>
-                <span>/etc/pacman.conf</span>
-                <span>    store at /holo/backup/etc/pacman.conf</span>
-                <span>       apply /holo/repo/00-base/etc/pacman.conf</span>
-                <span>    passthru /holo/repo/10-add-catalyst-repo/etc/pacman.conf.holoscript</span>
-                <span>    passthru /holo/repo/20-enable-color/etc/pacman.conf.holoscript</span>
-                <span>...</span>
-            </p>
+            <pre>
+$ holo scan
+...
+/etc/pacman.conf
+    store at /holo/backup/etc/pacman.conf
+       apply /holo/repo/00-base/etc/pacman.conf
+    passthru /holo/repo/10-add-catalyst-repo/etc/pacman.conf.holoscript
+    passthru /holo/repo/20-enable-color/etc/pacman.conf.holoscript
+... </pre>
             <p>
                 As seen in this example, the disambiguator is used to determine
                 the application order when multiple repository files work on
@@ -237,21 +229,19 @@
                 The first <tt>holo apply</tt> after installing a new hologram
                 might look like this:
             </p>
-            <p class="code">
-                <span>$ sudo holo apply</span>
-                <span>[holo] Working on /etc/nginx/nginx.conf</span>
-                <span>[holo]   store at /holo/backup/etc/nginx/nginx.conf</span>
-                <span>[holo]      apply /holo/repo/20-webserver/etc/nginx/nginx.conf</span>
-            </p>
+            <pre>
+$ sudo holo apply
+[holo] Working on /etc/nginx/nginx.conf
+[holo]   store at /holo/backup/etc/nginx/nginx.conf
+[holo]      apply /holo/repo/20-webserver/etc/nginx/nginx.conf</pre>
             <p>
                 But when <tt>holo apply</tt> is run again, it recognizes that
                 the backup is already up-to-date:
             </p>
-            <p class="code">
-                <span>$ sudo holo apply</span>
-                <span>[holo] Working on /etc/nginx/nginx.conf</span>
-                <span>[holo]      apply /holo/repo/20-webserver/etc/nginx/nginx.conf</span>
-            </p>
+            <pre>
+$ sudo holo apply
+[holo] Working on /etc/nginx/nginx.conf
+[holo]      apply /holo/repo/20-webserver/etc/nginx/nginx.conf</pre>
             <p>
                 Besides allowing the user to inspect the default configuration,
                 this backup serves two purposes: First, it is used as a base

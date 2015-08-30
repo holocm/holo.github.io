@@ -193,15 +193,11 @@ section a:hover, section a:active, section a:focus {
     text-decoration: underline !important;
 }
 
-p.code, tt {
-    font-family: monospace;
-    font-size: 1rem;
-}
-
-p.code > span {
-    display: block;
+pre {
     padding-left: 2rem;
-    white-space: pre;
+}
+pre, tt {
+    font-size: 1rem;
 }
 
 /*******************************************************************************
