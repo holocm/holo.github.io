@@ -124,7 +124,7 @@
                 Entries in the configuration repository follow a fixed naming scheme:
             </p>
             <p class="code">
-                <span><span class="highlight">/holo/repo</span>/<span class="highlight">20-webserver</span>/<span class="highlight">etc/nginx/nginx.conf</span></span>
+                <span>/holo/repo/20-webserver/etc/nginx/nginx.conf</span>
                 <span> ^          ^            ^</span>
                 <span> |          |            |</span>
                 <span> |          |            +-- path to target</span>
@@ -181,18 +181,24 @@
                 updates as well during the next <tt>holo apply</tt>.
             </p>
             <p class="code">
-                <span>$ sudo pacman -Syu    <span class="comment">(perform system update)</span></span>
+                <span>$ sudo pacman -Syu</span>
                 <span>...</span>
                 <span>(3/8) upgrading pacman</span>
                 <span>warning: /etc/pacman.conf installed as /etc/pacman.conf.pacnew</span>
-                <span class="comment">(new default configuration is available and placed next to the current configuration)</span></span>
                 <span>...</span>
+            </p>
+            <p>
+                In this example, the system update includes a new default
+                configuration, which is placed next to the currently used
+                configuration. Holo will recognize this and use the new default
+                configuration:
+            </p>
+            <p class="code">
                 <span>$ sudo holo apply</span>
                 <span>...</span>
                 <span>[holo] Working on /etc/pacman.conf</span>
                 <span>[holo]     update /etc/pacman.conf.pacnew -&gt; /holo/backup/etc/pacman.conf</span>
                 <span>[holo]   passthru /holo/repo/20-enable-color/etc/pacman.conf.holoscript</span>
-                <span class="comment">(Holo recognizes and uses the new default configuration)</span></span>
                 <span>...</span>
             </p>
             <p>
@@ -228,17 +234,23 @@
                 Before Holo overwrites the default configuration supplied by
                 the application package, it always takes a copy which is placed
                 below <tt>/holo/backup</tt>. This typically happens only once.
+                The first <tt>holo apply</tt> after installing a new hologram
+                might look like this:
             </p>
             <p class="code">
                 <span>$ sudo holo apply</span>
                 <span>[holo] Working on /etc/nginx/nginx.conf</span>
                 <span>[holo]   store at /holo/backup/etc/nginx/nginx.conf</span>
                 <span>[holo]      apply /holo/repo/20-webserver/etc/nginx/nginx.conf</span>
-                <span class="comment">(default config saved to /holo/backup)</span>
+            </p>
+            <p>
+                But when <tt>holo apply</tt> is run again, it recognizes that
+                the backup is already up-to-date:
+            </p>
+            <p class="code">
                 <span>$ sudo holo apply</span>
                 <span>[holo] Working on /etc/nginx/nginx.conf</span>
                 <span>[holo]      apply /holo/repo/20-webserver/etc/nginx/nginx.conf</span>
-                <span class="comment">(/holo/backup is already up-to-date from previous run)</span>
             </p>
             <p>
                 Besides allowing the user to inspect the default configuration,

@@ -193,10 +193,6 @@ section a:hover, section a:active, section a:focus {
     text-decoration: underline !important;
 }
 
-span.highlight:hover {
-    font-weight: bold;
-}
-
 p.code, tt {
     font-family: monospace;
     font-size: 1rem;
@@ -206,11 +202,6 @@ p.code > span {
     display: block;
     padding-left: 2rem;
     white-space: pre;
-}
-
-span.comment {
-    font-family: 'Montserrat', sans-serif;
-    color: #005469;
 }
 
 /*******************************************************************************
