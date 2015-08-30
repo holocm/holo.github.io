@@ -178,10 +178,6 @@ section {
     color: black;
 }
 
-section pre {
-    padding-left: 2rem;
-}
-
 section a {
     /* the blue highlight needs to be a bit darker to look the same against a
      * light background */
@@ -191,6 +187,25 @@ section a {
 
 section a:hover, section a:active, section a:focus {
     text-decoration: underline !important;
+}
+
+span.highlight {
+    color: red;
+}
+
+p.code, tt {
+    font-family: monospace;
+    font-size: 1rem;
+}
+
+p.code > span {
+    display: block;
+    padding-left: 2rem;
+    white-space: pre;
+}
+
+section:nth-child(odd) {
+    background: #DDD;
 }
 
 /*******************************************************************************
