@@ -178,6 +178,10 @@ section {
     color: black;
 }
 
+section:nth-child(odd) {
+    background: #DDD;
+}
+
 section a {
     /* the blue highlight needs to be a bit darker to look the same against a
      * light background */
@@ -189,8 +193,8 @@ section a:hover, section a:active, section a:focus {
     text-decoration: underline !important;
 }
 
-span.highlight {
-    color: red;
+span.highlight:hover {
+    font-weight: bold;
 }
 
 p.code, tt {
@@ -204,8 +208,9 @@ p.code > span {
     white-space: pre;
 }
 
-section:nth-child(odd) {
-    background: #DDD;
+span.comment {
+    font-family: 'Montserrat', sans-serif;
+    color: #005469;
 }
 
 /*******************************************************************************
