@@ -196,8 +196,14 @@ section a:hover, section a:active, section a:focus {
 pre {
     padding-left: 2rem;
 }
-pre, tt {
+pre, tt, code {
     font-size: 1rem;
+}
+
+/* pod2html wraps the content of <li> in <p> for some reason */
+section li > p {
+    margin: 0;
+    padding: 0;
 }
 
 /*******************************************************************************
