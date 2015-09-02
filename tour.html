@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="de">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Holo - Minimalistic Configuration Management</title>
+    <link rel="stylesheet" type="text/css" href="./site.css">
+    <link rel="stylesheet" type="text/css" href="./font/font-awesome.min.css">
+    
+</head>
+<body>
+    <header>
+        <div id="header-container">
+            <div id="header-icon" class="fixed-width">
+                <a href="index.html"><img src="img/holo-logo.svg" alt="Holo"></a>
+            </div>
+            <div id="header-buttons" class="fixed-width">
+                <a href="https://twitter.com/holocm" title="Follow on Twitter"><i class="fa fa-twitter"></i></a>
+                <a href="https://github.com/majewsky/holo" title="Fork on GitHub"><i class="fa fa-github"></i></a>
+            </div>
+        </div>
+        
+    </header>
+    <section><div class="fixed-width clearfix"><h1 id="Configuration-in-packages">1. Configuration in packages</h1>
+
+<p>Configuring a service usually includes installing the application and placing some configuration files in the right locations. We can do both with a system package. For example, let&#39;s configure <code>haveged</code> on an Arch Linux box. (I&#39;m using Arch Linux throughout these examples since I&#39;m most familiar with it, but most package management systems work the same at this level.) The package can specify the application as a dependency...</p>
+
+<pre><code>$ pacman -Qip configure-haveged-1.0.0-1-any.tar.xz # show package metadata
+...
+Depends On     : haveged
+...</code></pre>
+
+<p>...and install the necessary files. In this case, we can even do without a configuration file and just enable the service by placing the right symlink below <i>/etc/systemd</i>:</p>
+
+<pre><code>$ pacman -Qlqp configure-haveged-1.0.0-1-any.tar.xz # list files in package
+/etc/
+/etc/systemd/
+/etc/systemd/system/
+/etc/systemd/system/multi-user.target.wants/
+/etc/systemd/system/multi-user.target.wants/haveged.service</code></pre>
+
+<p>Now when the <code>configure-haveged</code> package is installed, it also installs haveged as a dependency and enables it in systemd.</p>
+
+<p class="follow"><a href="./sources1.html" target="_blank">Source code for this example »</a></p>
+
+</div></section><section><div class="fixed-width clearfix"><h1 id="Where-the-package-management-fails">2. Where the package management fails</h1>
+
+<p>Let&#39;s look at a second example, and set up an nginx webserver that serves <i>/usr/share/doc/bash/</i> on <code>http://bashdoc.local</code>. Again, we pull in nginx as a dependency.</p>
+
+<pre><code>$ pacman -Qip configure-bashdocserver-1.0.0-1-any.tar.xz
+...
+Depends On     : nginx
+...</code></pre>
+
+<p>And we put the required configuration file into the package.</p>
+
+<pre><code>$ pacman -Qlqp configure-bashdocserver-1.0.0-1-any.tar.xz
+/etc/
+/etc/nginx/
+/etc/nginx/nginx.conf</code></pre>
+
+<p>But this time, this doesn&#39;t work.</p>
+
+<pre><code>$ sudo pacman -U configure-bashdocserver-1.0.0-1-any.tar.xz # install package
+...
+(1/1) checking package integrity
+(1/1) loading package files
+(1/1) checking for file conflicts
+error: failed to commit transaction (conflicting files)
+configure-bashdocserver: /etc/nginx/nginx.conf exists in filesystem
+...
+$ pacman -Qo /etc/nginx/nginx.conf # who owns this file?
+/etc/nginx/nginx.conf is owned by nginx 1.8.0-1</code></pre>
+
+<p>The nginx package contains an example configuration which is installed in the same location. The package management cannot resolve this file conflict because it does not know which package takes precedence.</p>
+
+<p class="follow"><a href="./sources2.html" target="_blank">Source code for this example »</a></p>
+
+</div></section><section><div class="fixed-width clearfix"><h1 id="Resolving-the-conflicts-with-Holo">3. Resolving the conflicts with Holo</h1>
+
+<p>Holo&#39;s initial motivation was to resolve exactly such file conflicts. Since we&#39;re in the domain of configuration management, we know that our configuration takes precedence over the default configuration. But since the package management insists on putting the default configuration where it is, we have to fix that after the fact. For now, let&#39;s install our configuration in a different location:</p>
+
+<pre><code>$ pacman -Qlqp configure-bashdocserver-1.0.0-2-any.tar.xz
+/holo/
+/holo/repo/
+/holo/repo/10-bashdocserver/
+/holo/repo/10-bashdocserver/etc/
+/holo/repo/10-bashdocserver/etc/nginx/
+/holo/repo/10-bashdocserver/etc/nginx/nginx.conf</code></pre>
+
+<p>The configuration has been moved to Holo&#39;s configuration repository below <i>/holo/repo</i>. (Don&#39;t worry about the <code>10-bashdocserver</code> bit for now, we&#39;ll see why it&#39;s useful in the next example.) We also need Holo as a dependency for our configuration package:</p>
+
+<pre><code>$ pacman -Qip configure-bashdocserver-1.0.0-2-any.tar.xz
+...
+Depends On     : nginx  holo
+...</code></pre>
+
+<p>Now we can install the package, and after that, we can install the configuration from Holo&#39;s repository:</p>
+
+<pre><code>$ sudo holo apply
+[holo] Working on /etc/nginx/nginx.conf
+[holo]      apply /holo/repo/10-bashdocserver/etc/nginx/nginx.conf</code></pre>
+
+<p>We can usually skip this last step since packages can include post-install/upgrade/remove routines where we can call <code>holo apply</code>, as shown in the complete source code for this example.</p>
+
+<p class="follow"><a href="./sources3.html" target="_blank">Source code for this example »</a></p>
+
+</div></section><section><div class="fixed-width clearfix"><h1 id="Advanced-features">4. Advanced features</h1>
+
+<p>To add to our previous scenario, let&#39;s assume that we have successfully rolled out the <code>configure-bashdocserver</code> package to multiple systems. But there is this one system where we cannot use it yet because another webserver is already running on port 80. If we want to install it, we need to change the configuration just a little bit so that nginx listens on port 8080 instead.</p>
+
+<p>Holo can help with that, too. Let&#39;s build a new configuration package that builds on the previous one, by installing it as a dependency.</p>
+
+<pre><code>$ pacman -Qip configure-bashdocserver-extra-1.0.0-1-any.tar.xz
+...
+Depends On     : configure-bashdocserver
+...</code></pre>
+
+<p>We want to reuse our configuration from before, but change it slightly. Thankfully, Holo&#39;s configuration repository can not only contain complete configuration files, but also scripts that modify the configuration file (identified by the <code>.holoscript</code> extension):</p>
+
+<pre><code>$ pacman -Qlqp configure-bashdocserver-extra-1.0.0-1-any.tar.xz
+/holo/
+/holo/repo/
+/holo/repo/20-alternate-port/
+/holo/repo/20-alternate-port/etc/
+/holo/repo/20-alternate-port/etc/nginx/
+/holo/repo/20-alternate-port/etc/nginx/nginx.conf.holoscript</code></pre>
+
+<p>A holoscript receives the original configuration file on stdin and prints the modified version on stdout. In this case, we modify the <code>listen 80</code> directive.</p>
+
+<pre><code>$ cat nginx.conf.holoscript
+#!/bin/sh
+sed &#39;s/listen\s*80;/listen 8080;/&#39;</code></pre>
+
+<p>When running <code>holo apply</code>, this script will be applied to the configuration from the previous configuration package.</p>
+
+<pre><code>$ sudo holo apply
+[holo] Working on /etc/nginx/nginx.conf
+[holo]      apply /holo/repo/10-bashdocserver/etc/nginx/nginx.conf
+[holo]   passthru /holo/repo/20-alternate-port/etc/nginx/nginx.conf.holoscript</code></pre>
+
+<p>The order in which repository files are applied is defined by the directory names below <i>/holo/repo</i> (<code>10-bashdocserver</code> and <code>20-alternate-port</code>), which we call <i>disambiguators</i>.</p>
+
+<p>Holoscripts can also be used on their own, without a plain configuration coming before it. In this case, the holoscript modifies the default configuration installed by the application package.</p>
+
+<p class="follow"><a href="./sources4.html" target="_blank">Source code for this example »</a></p>
+
+</div></section><section><div class="fixed-width clearfix"><h1 id="Just-how-tiny-is-Holo">5. Just how tiny is Holo?</h1>
+
+<p>This tiny:</p>
+
+<pre><code>$ ls -lh /usr/bin/holo
+-rwxr-xr-x 1 root root 2.0M 29. Aug 01:10 /usr/bin/holo
+$ ldd /usr/bin/holo
+      not a dynamic executable</code></pre>
+
+<p>Holo comes in one single static binary which is trivial to deploy even during initial setup of your system. To install it on your system as well, have a look at the user documentation.</p>
+
+<p class="follow"><a href="./">« Back to the user documentation</a></p></div></section>
+    <footer>
+        <div class="fixed-width clearfix">
+            <p>
+                This website is made with <a href="http://montserrat.zkysky.com.ar/en">Montserrat</a>
+                and <a href="http://fontawesome.io">FontAwesome</a>
+                and <a href="https://github.com/majewsky/majewsky.github.io">maintained at GitHub</a>.
+            </p>
+        </div>
+    </footer>
+</body>
+</html>

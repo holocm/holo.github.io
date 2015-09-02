@@ -206,6 +206,22 @@ section li > p {
     padding: 0;
 }
 
+p.follow {
+    text-align: center;
+    margin-top: 2rem;
+}
+p.follow a {
+    border: 1px solid #00A7D0;
+    border-radius: 5px;
+    background: #00A7D0;
+    color: white !important;
+    padding: 0.5rem;
+}
+p.follow a:hover, p.next a:active, p.next a:focus {
+    background: #00C7FF;
+    text-decoration: none !important;
+}
+
 /*******************************************************************************
  * footer
  */

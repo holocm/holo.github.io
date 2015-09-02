@@ -21,7 +21,22 @@
         </div>
         
     </header>
-    <section><div class="fixed-width clearfix"><h1 id="TODO">TODO</h1></div></section>
+    <section><div class="fixed-width clearfix"><h1 id="PKGBUILD-for-configure-haveged">PKGBUILD for configure-haveged</h1>
+
+<pre><code>pkgname=&#39;configure-haveged&#39;
+pkgdesc=&#39;Configuration package that installs and starts haveged&#39;
+pkgver=&#39;1.0.0&#39;
+pkgrel=1
+arch=any
+depends=(
+    &#39;haveged&#39;
+)
+
+package() {
+    mkdir -p &quot;${pkgdir}/etc/systemd/system/multi-user.target.wants/&quot;
+    ln -sf /usr/lib/systemd/system/haveged.service \
+        &quot;${pkgdir}/etc/systemd/system/multi-user.target.wants/haveged.service&quot;
+}</code></pre></div></section>
     <footer>
         <div class="fixed-width clearfix">
             <p>
