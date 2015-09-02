@@ -133,18 +133,13 @@ header #header-buttons {
 
 header a.button {
     display: inline-block;
-    border: 1px solid #00C7FF;
+    border: 0;
     border-radius: 5px;
     padding: 0.5rem;
     background: #00C7FF;
     color: black !important;
     text-decoration: none !important;
 }
-header a.button-small {
-    font-size: 1rem;
-    padding: 0.3rem;
-}
-
 header a.button:hover, header a.button:active, header a.button:focus {
     background: white;
 }
@@ -194,8 +189,14 @@ section a:hover, section a:active, section a:focus {
 }
 
 pre {
+    max-width: 100%;
+    overflow-x: auto;
     padding-left: 2rem;
 }
+pre > code {
+    display: block;
+}
+
 pre, tt, code {
     font-size: 1rem;
 }
@@ -211,7 +212,7 @@ p.follow {
     margin-top: 2rem;
 }
 p.follow a {
-    border: 1px solid #00A7D0;
+    border: 0;
     border-radius: 5px;
     background: #00A7D0;
     color: white !important;
