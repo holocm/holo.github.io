@@ -274,7 +274,17 @@ $ sudo holo apply --force user:qux
 [holo] Working on user:qux
 [holo]        fix home directory: /var/qux, expected /var/lib/qux</code></pre>
 
-<p>Second, when a hologram is deleted, Holo will never automatically clean up users or groups (as it does for configuration files), since there might still be files belonging to the users/groups in question. Recommended best practice is to have the hologram print a message in its post-remove routine instructing the administrator to clean up lingering users/groups manually.</p></div></section>
+<p>Second, when a hologram is deleted, Holo will never automatically clean up users or groups (as it does for configuration files), since there might still be files belonging to the users/groups in question. Recommended best practice is to have the hologram print a message in its post-remove routine instructing the administrator to clean up lingering users/groups manually.</p>
+
+<p>Like for configuration files, multiple holograms can contribute to a single entity. But when multiple definitions for one entity are stacked on top of each other, they are not allowed to contradict itself. For example, if two holograms define different home directories, this will be considered an error, since both holograms might rely on their respective home directory settings.</p>
+
+<pre><code>$ cat /usr/share/holo/01-first.json
+{ &quot;users: [ { &quot;name&quot;: &quot;foo&quot;, &quot;home&quot;: &quot;/home/foo&quot; } ] }
+$ cat /usr/share/holo/02-second.json
+{ &quot;users: [ { &quot;name&quot;: &quot;foo&quot;, &quot;home&quot;: &quot;/var/lib/foo&quot; } ] }
+$ holo scan
+[holo] Failed to read /usr/share/holo/02-second.json:
+[holo]     conflicting home directory for user &#39;foo&#39; (existing: /home/foo, new: /var/lib/foo)</code></pre></div></section>
     <footer>
         <div class="fixed-width clearfix">
             <p>
