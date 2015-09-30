@@ -155,19 +155,26 @@ warning: /etc/pacman.conf installed as /etc/pacman.conf.pacnew
 
 </div></section><section><div class="fixed-width clearfix"><h1 id="Management-of-UNIX-user-accounts-and-groups">Management of UNIX user accounts and groups</h1>
 
-<p>Holograms can install JSON files into <i>/usr/share/holo</i> that describe UNIX user accounts and groups that shall be created during <code>holo apply</code> runs. For example:</p>
+<p>Holograms can install TOML files into <i>/usr/share/holo</i> that describe UNIX user accounts and groups that shall be created during <code>holo apply</code> runs. (Previous releases used JSON files, which are still recognized, but deprecated.) For example:</p>
 
-<pre><code>$ cat /usr/share/holo/01-example.json
-{
-    &quot;groups&quot;: [
-        { &quot;name&quot;: &quot;foo&quot; },
-        { &quot;name&quot;: &quot;bar&quot;, &quot;system&quot;: true }
-    ],
-    &quot;users&quot;: [
-        { &quot;name&quot;: &quot;foo&quot;, &quot;group&quot;: &quot;foo&quot; },
-        { &quot;name&quot;: &quot;qux&quot;, &quot;home&quot;: &quot;/var/lib/qux&quot;, &quot;system&quot;: true }
-    ]
-}
+<pre><code>$ cat /usr/share/holo/01-example.toml
+
+[[group]]
+name   = &quot;foo&quot;
+
+[[group]]
+name   = &quot;bar&quot;
+system = true
+
+[[user]]
+name   = &quot;foo&quot;
+group  = &quot;foo&quot;
+
+[[user]]
+name   = &quot;qux&quot;
+home   = &quot;/var/lib/qux&quot;
+system = true
+
 $ sudo holo apply
 [holo] Working on group:bar
 [holo]     create group with type: system
@@ -185,7 +192,7 @@ $ sudo groupadd foo
 $ sudo useradd --gid foo foo
 $ sudo useradd --system --home-dir /var/lib/qux qux</code></pre>
 
-<p>In the JSON definition files, the following attributes are accepted for groups:</p>
+<p>In the TOML definition files, the following attributes are accepted for groups:</p>
 
 <dl>
 
@@ -265,7 +272,7 @@ $ sudo useradd --system --home-dir /var/lib/qux qux</code></pre>
 
 <p>In either case, `name` is the only required attribute.</p>
 
-<p>In contrast to files, where Holo operates very confidently (and only refuses operation when target files were modified manually), users and groups are treated more carefully. First, whenever an existing user account or group does not exactly match the definition in the JSON file, Holo will not touch it unless instructed to apply `--force`:</p>
+<p>In contrast to files, where Holo operates very confidently (and only refuses operation when target files were modified manually), users and groups are treated more carefully. First, whenever an existing user account or group does not exactly match the definition in the TOML file, Holo will not touch it unless instructed to apply `--force`:</p>
 
 <pre><code>$ sudo holo apply user:qux
 [holo] Working on user:qux
@@ -278,12 +285,20 @@ $ sudo holo apply --force user:qux
 
 <p>Like for configuration files, multiple holograms can contribute to a single entity. But when multiple definitions for one entity are stacked on top of each other, they are not allowed to contradict itself. For example, if two holograms define different home directories, this will be considered an error, since both holograms might rely on their respective home directory settings.</p>
 
-<pre><code>$ cat /usr/share/holo/01-first.json
-{ &quot;users: [ { &quot;name&quot;: &quot;foo&quot;, &quot;home&quot;: &quot;/home/foo&quot; } ] }
-$ cat /usr/share/holo/02-second.json
-{ &quot;users: [ { &quot;name&quot;: &quot;foo&quot;, &quot;home&quot;: &quot;/var/lib/foo&quot; } ] }
+<pre><code>$ cat /usr/share/holo/01-first.toml
+
+[[user]]
+name = &quot;foo&quot;
+home = &quot;/home/foo&quot;
+
+$ cat /usr/share/holo/02-second.toml
+
+[[user]]
+name = &quot;foo&quot;
+home = &quot;/var/lib/foo&quot;
+
 $ holo scan
-[holo] Failed to read /usr/share/holo/02-second.json:
+[holo] Failed to read /usr/share/holo/02-second.toml:
 [holo]     conflicting home directory for user &#39;foo&#39; (existing: /home/foo, new: /var/lib/foo)</code></pre></div></section>
     <footer>
         <div class="fixed-width clearfix">
