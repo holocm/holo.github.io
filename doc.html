@@ -21,9 +21,13 @@
         </div>
     </header>
     <div id="section-container">
-        <section><div class="fixed-width clearfix"><h1 id="User-documentation">User documentation</h1>
+        <section><div class="fixed-width clearfix"><h1 id="User-documentation">User documentation
 
-<p>New to Holo? Check out our feature overview before diving into the details in here.</p>
+</h1>
+
+<p>New to Holo? Check out our feature overview before diving into the details in here.
+
+</p>
 
 <p class="follow"><a href="./tour.html">Take the tour »</a></p>
 
@@ -49,258 +53,140 @@ $ make
 $ make check
 $ sudo make install</code></pre>
 
-<p>You need <a href="https://golang.org">Go</a> to compile Holo and <a href="https://www.perl.org">Perl</a> to run the testcase. Packages for Go and Perl are available for all major distributions. Note that these are all build-time dependencies; when installed, Holo is a single static binary (plus manpage) that depends only on a UNIX kernel.</p>
+<p>You need <a href="https://golang.org">Go</a> to compile Holo and <a href="https://www.perl.org">Perl</a> to run the tests. Packages for Go and Perl are available for all major distributions. Note that these are both build-time dependencies; when installed, Holo is a single static binary (plus manpage) that depends only on a UNIX kernel, plus the <a href="http://pkg-shadow.alioth.debian.org/">shadow</a> tools if you wish to provision user accounts or groups.</p>
 
-</div></section><section><div class="fixed-width clearfix"><h1 id="Building-holograms">Building holograms</h1>
 
-<p>In Holo, configuration is deployed in packages using the standard package management tools of your Linux distribution, so first, you should familiarize yourself with building and installing such packages. When administrating multiple systems, it is good practice to create a package repository to distribute configuration updates. To differentiate configuration packages from the application packages provided by your distribution, we&#39;re going to call these <i>holograms</i>.</p>
 
-<p>The package management allows us to specify application packages and other holograms as dependencies of our hologram, and put configuration files into the hologram. Holo only comes into play when we go beyond the capabilities of the package management.</p>
+</div></section><section><div class="fixed-width clearfix"><h1 id="Description">Description</h1>
 
-</div></section><section><div class="fixed-width clearfix"><h1 id="The-configuration-repository">The configuration repository</h1>
+<p>Holo adds a few sprinkles on top of package management to make it suitable for basic configuration management tasks. Its prime directive is to have all configuration statically declared and defined within packages, which can be installed to add new configuration, or uninstalled to remove configuration from a system.</p>
 
-<p>Package management does not allow multiple packages to install a file in the same location. So when an application package installs a default configuration file, a hologram cannot directly overwrite this configuration file.</p>
+<p>Package management already offers 99% of the needed tools: Metapackages (usually called &quot;holograms&quot; or &quot;holodecks&quot; in Holo) can pull in other packages as dependencies, thus installing the software required for a certain task, and contain their own files to configure the software installed.</p>
 
-<pre><code>$ pacman -Qo /etc/nginx/nginx.conf
-/etc/nginx/nginx.conf is owned by nginx 1.8.0-1</code></pre>
+<p>Holo adds facilties to work around shortcomings (from the configuration management perspective) of the package management.</p>
 
-<p>Instead, Holo offers a configuration repository at <i>/usr/share/holo/repo</i> where the hologram can put its configuration file.</p>
+<h2 id="Provisioning-of-files-via-the-configuration-repository">Provisioning of files via the configuration repository</h2>
 
-<pre><code>$ pacman -Qo /usr/share/holo/repo/20-webserver/etc/nginx/nginx.conf
-/usr/share/holo/repo/20-webserver/etc/nginx/nginx.conf is owned by hologram-webserver 1.0.0-1</code></pre>
-
-<p>The <code>holo apply</code> command is then used to install the hologram&#39;s configuration file in the right place. Most package management tools allow packages to carry post-install hooks for this purpose.</p>
-
-<pre><code>$ sudo holo apply
-[holo] Working on /etc/nginx/nginx.conf
-[holo]   store at /var/lib/holo/backup/etc/nginx/nginx.conf
-[holo]      apply /usr/share/holo/repo/20-webserver/etc/nginx/nginx.conf</code></pre>
-
-<p>Entries in the configuration repository follow a fixed naming scheme:</p>
+<p>The configuration repository at <i>/usr/share/holo/repo</i> can be used to resolve file conflicts when multiple packages (holograms or system packages) work on the same configuration file. Each file in the repository works on a certain <b>target</b>, as determined by its file name:</p>
 
 <pre><code>/usr/share/holo/repo/20-webserver/etc/nginx/nginx.conf
-  ^         ^            ^
-  |         |            |
-  |         |            +-- path to target
-  |         |
-  |         +-- disambiguator
-  |
-  +-- repository path</code></pre>
+                      ^          --+------------------
+                      |            |
+                      |            +-- path to target
+                      |
+                      +-- disambiguator</code></pre>
 
-<p>The disambiguator is always required, and allows multiple repository files to operate on the same target (sorted alphabetically by their disambiguator). The pattern of putting a number at the start of the disambiguator is not required, but useful to control the ordering of repo files.</p>
+<p>The disambiguator is always required, and allows multiple repository entries to operate on the same target (sorted alphabetically by their disambiguator). The pattern of putting a number at the start of the disambiguator is not required, but useful to control the ordering of repo files.</p>
 
-</div></section><section><div class="fixed-width clearfix"><h1 id="Application-strategies">Application strategies</h1>
+<p>Repository entries are applied on the <b>target base</b>, the initial version of the target that was found at the target path during the first <code>holo apply</code> run. This target base is saved at <i>/var/lib/holo/base/$target</i> and will be updated automatically when the package management installed an updated version of the target base as <i>$target.rpmnew</i>, <i>$target.dpkg-dist</i>, etc. (The exact paths depend on the package manager.)</p>
 
-<p>When the repository file is a plain file or a symlink, the default strategy (&quot;apply&quot;) is to copy this file to the target location. Symlink targets are copied verbatim, so relative symlinks should be relative to the target directory.</p>
+<p>Repository entries that are plain files or symlinks will just overwrite the target base (or all previous entries), whereas executable repository entries with an extra <code>.holoscript</code> suffix can be used to modify the target base (or the result of a previous application step). The target contents will be piped through the script. This is typically used when the default configuration for an application shall be used, but with some minor modifications. The following example uses the default configuration for <a href="http://man.he.net/man8/pacman">pacman(8)</a>, but enables the &quot;Color&quot; option:</p>
 
-<p>When the repository file is an executable file or a symlink to an executable file carrying the extra <code>.holoscript</code> extension, the script is executed and the contents of the original file are piped through it to obtain the resulting configuration file. This strategy is called &quot;passthru&quot; in the output of <code>holo apply</code> and <code>holo scan</code>.</p>
-
-<p>For example, the following setup installs the default configuration for Pacman, but enables the &quot;Color&quot; option which is commented out in the default configuration.</p>
-
-<pre><code>$ holo scan
-...
-/etc/pacman.conf
-    store at /var/lib/holo/backup/etc/pacman.conf
-    passthru /usr/share/holo/repo/20-enable-color/etc/pacman.conf.holoscript
-...
-$ cat /usr/share/holo/repo/20-enable-color/etc/pacman.conf.holoscript
+<pre><code>$ cat /usr/share/holo/repo/20-enable-color/etc/pacman.conf.holoscript
 #!/bin/sh
-sed &#39;s/^#\s*Color$/Color/&#39;</code></pre>
+sed &#39;s/^#\s*Color$/Color/&#39;
 
-<p>The advantage of holoscripts over plain configuration files is that when the default configuration is updated, you get the updates as well during the next <code>holo apply</code>.</p>
+$ sudo holo apply /etc/pacman.conf
 
-<pre><code>$ sudo pacman -Syu
-...
-(3/8) upgrading pacman
-warning: /etc/pacman.conf installed as /etc/pacman.conf.pacnew
-... </code></pre>
+Working on /etc/pacman.conf
+  store at /var/lib/holo/base/etc/pacman.conf
+  passthru /usr/share/holo/repo/20-enable-color/etc/pacman.conf.holoscript</code></pre>
 
-<p>In this example, the system update includes a new default configuration, which is placed next to the currently used configuration. Holo will recognize this and use the new default configuration:</p>
+<p>When writing the new target file, ownership and permissions will be copied from the target base, and thus from the original target file. Furthermore, a copy of the provisioned target file is written to <i>/var/lib/holo/provisioned/$target</i> for use by <code>holo diff $target</code>.</p>
 
-<pre><code>$ sudo holo apply
-...
-[holo] Working on /etc/pacman.conf
-[holo]     update /etc/pacman.conf.pacnew -&gt; /var/lib/holo/backup/etc/pacman.conf
-[holo]   passthru /usr/share/holo/repo/20-enable-color/etc/pacman.conf.holoscript
-... </code></pre>
+<h2 id="Provisioning-of-user-accounts-and-groups">Provisioning of user accounts and groups</h2>
 
-<p>Another advantage is that multiple holoscripts can be chained. Multiple holograms can thus modify the same default configuration, or further specialize a base configuration provided by a base hologram:</p>
+<p>Entity definitions can be added to automatically provision user accounts and groups to <a href="http://man.he.net/man5/passwd">passwd(5)</a> and <a href="http://man.he.net/man5/group">group(5)</a>. Provisioning uses the standard commands <a href="http://man.he.net/man8/useradd">useradd(8)</a>, <a href="http://man.he.net/man8/usermod">usermod(8)</a>, <a href="http://man.he.net/man8/groupadd">groupadd(8)</a> and <a href="http://man.he.net/man8/groupmod">groupmod(8)</a>.</p>
 
-<pre><code>$ holo scan
-...
-/etc/pacman.conf
-    store at /var/lib/holo/backup/etc/pacman.conf
-       apply /usr/share/holo/repo/00-base/etc/pacman.conf
-    passthru /usr/share/holo/repo/10-add-catalyst-repo/etc/pacman.conf.holoscript
-    passthru /usr/share/holo/repo/20-enable-color/etc/pacman.conf.holoscript
-... </code></pre>
+<p>Entity definitions are placed at <i>/usr/share/holo/*.toml</i> and are written in TOML. The following fields are accepted for users and groups:</p>
 
-<p>As seen in this example, the disambiguator is used to determine the application order when multiple repository files work on the same target. There is no restriction on how repository files are ordered. When somewhere in the application chain, a plain file is found, the effects of all previous application steps are discarded and overwritten by that config file.</p>
-
-</div></section><section><div class="fixed-width clearfix"><h1 id="The-backup-directory">The backup directory</h1>
-
-<p>Before Holo overwrites the default configuration supplied by the application package, it always takes a copy which is placed below <i>/var/lib/holo/backup</i>. This typically happens only once. The first <code>holo apply</code> after installing a new hologram might look like this:</p>
-
-<pre><code>$ sudo holo apply
-[holo] Working on /etc/nginx/nginx.conf
-[holo]   store at /var/lib/holo/backup/etc/nginx/nginx.conf
-[holo]      apply /usr/share/holo/repo/20-webserver/etc/nginx/nginx.conf</code></pre>
-
-<p>But when <code>holo apply</code> is run again, it recognizes that the backup is already up-to-date:</p>
-
-<pre><code>$ sudo holo apply
-[holo] Working on /etc/nginx/nginx.conf
-[holo]      apply /usr/share/holo/repo/20-webserver/etc/nginx/nginx.conf</code></pre>
-
-<p>Besides allowing the user to inspect the default configuration, this backup serves two purposes: First, it is used as a base for applying holoscripts. Second, the owner, group, permissions and timestamps of the target configuration are always copied from this backup, and thus match the corresponding metadata of the default configuration.</p>
-
-</div></section><section><div class="fixed-width clearfix"><h1 id="Management-of-UNIX-user-accounts-and-groups">Management of UNIX user accounts and groups</h1>
-
-<p>Holograms can install TOML files into <i>/usr/share/holo</i> that describe UNIX user accounts and groups that shall be created during <code>holo apply</code> runs. (Previous releases used JSON files, which are still recognized, but deprecated.) For example:</p>
-
-<pre><code>$ cat /usr/share/holo/01-example.toml
-
-[[group]]
-name   = &quot;foo&quot;
-
-[[group]]
-name   = &quot;bar&quot;
-system = true
+<pre><code>[[group]]
+name    = &quot;mygroup&quot;            # string,  the group name
+system  = false                # if true, gives --system to groupadd
+gid     = 1001                 # integer, given to groupadd as --gid
 
 [[user]]
-name   = &quot;foo&quot;
-group  = &quot;foo&quot;
+name    = &quot;myuser&quot;             # string,  the user name
+system  = false                # if true, gives --system to useradd
+comment = &quot;My Own User&quot;        # string,  given to useradd as --comment
+uid     = 1023                 # integer, given to useradd as --uid
+group   = &quot;mygroup&quot;            # string,  given to useradd as --gid
+groups  = [ &quot;audio&quot;, &quot;video&quot; ] # strings, given to useradd as --groups
+home    = &quot;/var/lib/myuser&quot;    # string,  given to useradd as --home-dir
+shell   = &quot;/usr/bin/zsh&quot;       # string,  given to useradd as --shell</code></pre>
 
-[[user]]
-name   = &quot;qux&quot;
-home   = &quot;/var/lib/qux&quot;
-system = true
+<p>In either case, <code>name</code> is the only required attribute. Multiple entity definitions may apply to the same entity if they have the same <code>name</code> attribute. This can be useful if a base hologram creates the entity and a later hologram requires more specific configuration for this entity. When entity definitions are stacked on each other, they are not allowed to contradict one another. (Different lists of auxiliary groups are allowed and will be merged.)</p>
 
-$ sudo holo apply
-[holo] Working on group:bar
-[holo]     create group with type: system
-[holo] Working on group:foo
-[holo]     create group
-[holo] Working on user:foo
-[holo]     create user with group: foo
-[holo] Working on user:qux
-[holo]     create user with type: system, home directory: /var/lib/qux</code></pre>
+<h2 id="Dealing-with-manual-changes">Dealing with manual changes</h2>
 
-<p>Behind the scenes, this uses the <code>shadow</code> tools (<code>useradd</code>, <code>usermod</code>, <code>groupadd</code> and <code>groupmod</code>), so the above is exactly equivalent to</p>
+<p>When an entity (target file, user or group) provisioned by Holo is modified by the user or another program, the next <code>holo apply</code> run will complain about this and refuse to overwrite the manual changes.</p>
 
-<pre><code>$ sudo groupadd --system bar
-$ sudo groupadd foo
-$ sudo useradd --gid foo foo
-$ sudo useradd --system --home-dir /var/lib/qux qux</code></pre>
+<pre><code>$ sudo rm /etc/pacman.conf
+$ sudo usermod --uid 2003 user:test
+$ sudo holo apply /etc/pacman.conf
 
-<p>In the TOML definition files, the following attributes are accepted for groups:</p>
+Working on target/etc/pacman.conf
+     apply target/usr/share/holo/repo/01-base/etc/pacman.conf
+
+!! skipping target: file has been delete by user (use --force to restore)
+
+Working on user:test
+  found in target/usr/share/holo/01-base.toml
+      with UID: 1003
+
+!! User has UID: 2003, expected 1003 (use --force to overwrite)</code></pre>
+
+<p>The difference between the last provisioned and the actual entity can be inspected in detail with <code>holo diff</code>, and as suggested in the error messages, <code>holo apply --force</code> will restore the entities to the state described by the configuration repository.</p>
+
+</div></section><section><div class="fixed-width clearfix"><h1 id="Operations">Operations</h1>
+
+<p>All operations act on all entities (target files, users and groups) by default, but can be restricted to certain entities by adding their names to the command line. Target files are identified by their absolute path (e.g. <code>/etc/sddm/sddm.conf</code>), users and groups are identifed as <code>type:name</code>, e.g. <code>user:mysql</code> or <code>group:sudo</code>).</p>
 
 <dl>
 
-<dt id="name"><code>name</code></dt>
+<dt id="apply--f---force-entity"><b>apply</b> [<i>-f|--force</i>] [<i>entity</i> ...]</dt>
 <dd>
 
-<p>(string) the group name</p>
+<p>Read the configuration repository and entity definitions and apply the selected (or all) targets. Also, when repository files or target files have been deleted, but there still exist target bases in <i>/var/lib/holo/base</i>, scrub these.</p>
+
+<p>Scrubbing means to delete the target base if the target file has also been deleted, or to restore the target base when only the repository entries have been deleted. You can always run <code>holo scan</code> beforehand to check what will be done.</p>
+
+<p>By default, Holo will refuse to provision entities that have been changed by the user or by other programs. Apply <b>--force</b> to overwrite such changes.</p>
 
 </dd>
-<dt id="system"><code>system</code></dt>
+<dt id="diff-target"><b>diff</b> [<i>target</i> ...]</dt>
 <dd>
 
-<p>(bool) if true, gives <code>--system</code> to <code>groupadd</code></p>
+<p>Print a <a href="http://man.he.net/man1/diff">diff(1)</a> between the last provisioned version of each selected target file and the actual contents of that target file.</p>
 
 </dd>
-<dt id="gid"><code>gid</code></dt>
+<dt id="scan--s---short"><b>scan</b> [<i>-s|--short</i>]</dt>
 <dd>
 
-<p>(integer) given to <code>groupadd</code> as <code>--gid</code></p>
+<p>Read the configuration repository and entity definitions, and report what <code>holo apply</code> will do to apply these entities. This acts like a dry run for <code>holo apply</code> that usually does not require super-user privileges.</p>
+
+<p>With <b>--short</b>, only lists the names of all entities.</p>
 
 </dd>
 </dl>
 
-<p>And the following attributes are accepted for users:</p>
+</div></section><section><div class="fixed-width clearfix"><h1 id="Options">Options</h1>
 
 <dl>
 
-<dt id="name1"><code>name</code></dt>
+<dt id="help"><b>--help</b></dt>
 <dd>
 
-<p>(string) the user name</p>
+<p>Print out usage information.</p>
 
 </dd>
-<dt id="comment"><code>comment</code></dt>
+<dt id="version"><b>--version</b></dt>
 <dd>
 
-<p>(string) given to <code>useradd</code> as <code>--comment</code></p>
+<p>Print out Holo&#39;s version string including the release name.</p>
 
 </dd>
-<dt id="system1"><code>system</code></dt>
-<dd>
-
-<p>(bool) if true, gives <code>--system</code> to <code>useradd</code></p>
-
-</dd>
-<dt id="uid"><code>uid</code></dt>
-<dd>
-
-<p>(integer) given to <code>useradd</code> as <code>--uid</code></p>
-
-</dd>
-<dt id="group"><code>group</code></dt>
-<dd>
-
-<p>(string) given to <code>useradd</code> as <code>--gid</code></p>
-
-</dd>
-<dt id="groups"><code>groups</code></dt>
-<dd>
-
-<p>(array of strings) given to <code>useradd</code> as <code>--groups</code></p>
-
-</dd>
-<dt id="home"><code>home</code></dt>
-<dd>
-
-<p>(string) given to <code>useradd</code> as <code>--home-dir</code></p>
-
-</dd>
-<dt id="shell"><code>shell</code></dt>
-<dd>
-
-<p>(string) given to <code>useradd</code> as <code>--shell</code></p>
-
-</dd>
-</dl>
-
-<p>In either case, `name` is the only required attribute.</p>
-
-<p>In contrast to files, where Holo operates very confidently (and only refuses operation when target files were modified manually), users and groups are treated more carefully. First, whenever an existing user account or group does not exactly match the definition in the TOML file, Holo will not touch it unless instructed to apply `--force`:</p>
-
-<pre><code>$ sudo holo apply user:qux
-[holo] Working on user:qux
-[holo]        has home directory: /var/qux, expected /var/lib/qux (use --force to overwrite)
-$ sudo holo apply --force user:qux
-[holo] Working on user:qux
-[holo]        fix home directory: /var/qux, expected /var/lib/qux</code></pre>
-
-<p>Second, when a hologram is deleted, Holo will never automatically clean up users or groups (as it does for configuration files), since there might still be files belonging to the users/groups in question. Recommended best practice is to have the hologram print a message in its post-remove routine instructing the administrator to clean up lingering users/groups manually.</p>
-
-<p>Like for configuration files, multiple holograms can contribute to a single entity. But when multiple definitions for one entity are stacked on top of each other, they are not allowed to contradict itself. For example, if two holograms define different home directories, this will be considered an error, since both holograms might rely on their respective home directory settings.</p>
-
-<pre><code>$ cat /usr/share/holo/01-first.toml
-
-[[user]]
-name = &quot;foo&quot;
-home = &quot;/home/foo&quot;
-
-$ cat /usr/share/holo/02-second.toml
-
-[[user]]
-name = &quot;foo&quot;
-home = &quot;/var/lib/foo&quot;
-
-$ holo scan
-[holo] Failed to read /usr/share/holo/02-second.toml:
-[holo]     conflicting home directory for user &#39;foo&#39; (existing: /home/foo, new: /var/lib/foo)</code></pre></div></section>
+</dl></div></section>
     </div>
     <footer>
         <div class="fixed-width clearfix">
