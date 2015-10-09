@@ -157,12 +157,13 @@ header a.button:hover, header a.button:active, header a.button:focus {
  * content
  */
 
-section {
+div#section-container {
+    min-height: calc(100vh - 64px - 3rem); /* minus header minus footer */
     background: #EEE;
     color: black;
 }
 
-section:nth-child(odd) {
+section:nth-child(even) {
     background: #DDD;
 }
 
@@ -218,6 +219,8 @@ p.follow a:hover, p.next a:active, p.next a:focus {
 
 footer {
     text-align: center;
+    margin: 0.75rem 0;
+    line-height: 1.5rem;
 }
 
 footer a {
