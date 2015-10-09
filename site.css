@@ -178,6 +178,14 @@ section a:hover, section a:active, section a:focus {
     text-decoration: underline !important;
 }
 
+h1 {
+    font-size: 1.5rem;
+}
+
+h2 {
+    font-size: 1.2rem;
+}
+
 pre {
     max-width: 100%;
     overflow-x: auto;
