@@ -128,7 +128,7 @@ $ sudo holo apply /etc/pacman.conf
 Working on target/etc/pacman.conf
      apply target/usr/share/holo/repo/01-base/etc/pacman.conf
 
-!! skipping target: file has been delete by user (use --force to restore)
+!! skipping target: file has been deleted by user (use --force to restore)
 
 Working on user:test
   found in target/usr/share/holo/01-base.toml
@@ -154,13 +154,13 @@ Working on user:test
 <p>By default, Holo will refuse to provision entities that have been changed by the user or by other programs. Apply <b>--force</b> to overwrite such changes.</p>
 
 </dd>
-<dt id="diff-target"><b>diff</b> [<i>target</i> ...]</dt>
+<dt id="diff-entity"><b>diff</b> [<i>entity</i> ...]</dt>
 <dd>
 
 <p>Print a <a href="http://man.he.net/man1/diff">diff(1)</a> between the last provisioned version of each selected target file and the actual contents of that target file.</p>
 
 </dd>
-<dt id="scan--s---short"><b>scan</b> [<i>-s|--short</i>]</dt>
+<dt id="scan--s---short-entity"><b>scan</b> [<i>-s|--short</i>] [<i>entity</i> ...]</dt>
 <dd>
 
 <p>Read the configuration repository and entity definitions, and report what <code>holo apply</code> will do to apply these entities. This acts like a dry run for <code>holo apply</code> that usually does not require super-user privileges.</p>
