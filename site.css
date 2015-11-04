@@ -209,6 +209,10 @@ p.follow {
     text-align: center;
     margin-top: 2rem;
 }
+p.follow + * {
+    margin-top: 2rem;
+}
+
 p.follow a {
     border: 0;
     border-radius: 5px;
