@@ -23,145 +23,143 @@
     <div id="section-container">
         <section><div class="fixed-width clearfix"><h1 id="Configuration-in-packages">1. Configuration in packages</h1>
 
-<p>Configuring a service usually includes installing the application and placing some configuration files in the right locations. We can do both with a system package. For example, let&#39;s configure <code>haveged</code> on an Arch Linux box. (I&#39;m using Arch Linux throughout these examples since I&#39;m most familiar with it, but most package management systems work the same at this level.) The package can specify the application as a dependency...</p>
+<p>Configuring a service usually includes installing the application and placing some configuration files in the right locations. We can do both with a system package. For example, let&#39;s configure <code>haveged</code>. And to make this example distribution-independent, let&#39;s use <code>holo-build</code> to build the package from a short and readable description file:</p>
 
-<pre><code>$ pacman -Qip configure-haveged-1.0.0-1-any.tar.xz # show package metadata
-...
-Depends On     : haveged
-...</code></pre>
+<pre><code>$ cat &gt; configure-haveged.pkg.toml
 
-<p>...and install the necessary files. In this case, we can even do without a configuration file and just enable the service by placing the right symlink below <i>/etc/systemd</i>:</p>
+[package]
+name     = &quot;configure-haveged&quot;
+version  = &quot;1.0.0&quot;
+requires = [ &quot;haveged&quot; ]
 
-<pre><code>$ pacman -Qlqp configure-haveged-1.0.0-1-any.tar.xz # list files in package
-/etc/
-/etc/systemd/
-/etc/systemd/system/
-/etc/systemd/system/multi-user.target.wants/
-/etc/systemd/system/multi-user.target.wants/haveged.service</code></pre>
+[[symlink]]
+path   = &quot;/etc/systemd/system/multi-user.target.wants/haveged.service&quot;
+target = &quot;/usr/lib/systemd/system/haveged.service&quot;
 
-<p>Now when the <code>configure-haveged</code> package is installed, it also installs haveged as a dependency and enables it in systemd.</p>
+$ holo-build &lt; configure-haveged.pkg.toml</code></pre>
 
-<p class="follow"><a href="./sources1.html" target="_blank">Source code for this example »</a></p>
+<p>This generates a system package that pulls in the desired application as a dependency and installs the necessary configuration files. In this case, that&#39;s only one symlink in the right place to enable haveged as a systemd service.</p>
 
 </div></section><section><div class="fixed-width clearfix"><h1 id="Where-the-package-management-fails">2. Where the package management fails</h1>
 
-<p>Let&#39;s look at a second example, and set up an nginx webserver that serves <i>/usr/share/doc/bash/</i> on <code>http://bashdoc.local</code>. Again, we pull in nginx as a dependency.</p>
+<p>Let&#39;s look at a second example, and set up an nginx webserver. Again, we pull in nginx as a dependency, and enable it in systemd.</p>
 
-<pre><code>$ pacman -Qip configure-bashdocserver-1.0.0-1-any.tar.xz
-...
-Depends On     : nginx
-...</code></pre>
+<pre><code>$ cat &gt; configure-mywebserver.pkg.toml
 
-<p>And we put the required configuration file into the package.</p>
+[package]
+name     = &quot;configure-mywebserver&quot;
+version  = &quot;1.0.0&quot;
+requires = [ &quot;nginx&quot; ]
 
-<pre><code>$ pacman -Qlqp configure-bashdocserver-1.0.0-1-any.tar.xz
-/etc/
-/etc/nginx/
-/etc/nginx/nginx.conf</code></pre>
+[[symlink]]
+path   = &quot;/etc/systemd/system/multi-user.target.wants/nginx.service&quot;
+target = &quot;/usr/lib/systemd/system/nginx.service&quot;
 
-<p>But this time, this doesn&#39;t work.</p>
+[[file]]
+path        = &quot;/etc/nginx/nginx.conf&quot;
+contentFrom = &quot;nginx.conf&quot;
 
-<pre><code>$ sudo pacman -U configure-bashdocserver-1.0.0-1-any.tar.xz # install package
+$ holo-build &lt; configure-mywebserver.pkg.toml</code></pre>
+
+<p>This time, we add a configuration file (which I&#39;ve omitted here for brevity), but when trying to install the package, this produces an error:</p>
+
+<pre><code>$ sudo pacman -U configure-mywebserver-1.0.0-1-any.tar.xz # install package
 ...
 (1/1) checking package integrity
 (1/1) loading package files
 (1/1) checking for file conflicts
 error: failed to commit transaction (conflicting files)
-configure-bashdocserver: /etc/nginx/nginx.conf exists in filesystem
+configure-mywebserver: /etc/nginx/nginx.conf exists in filesystem
 ...
 $ pacman -Qo /etc/nginx/nginx.conf # who owns this file?
 /etc/nginx/nginx.conf is owned by nginx 1.8.0-1</code></pre>
 
 <p>The nginx package contains an example configuration which is installed in the same location. The package management cannot resolve this file conflict because it does not know which package takes precedence.</p>
 
-<p class="follow"><a href="./sources2.html" target="_blank">Source code for this example »</a></p>
-
 </div></section><section><div class="fixed-width clearfix"><h1 id="Resolving-the-conflicts-with-Holo">3. Resolving the conflicts with Holo</h1>
 
-<p>Holo&#39;s initial motivation was to resolve exactly such file conflicts. Since we&#39;re in the domain of configuration management, we know that our configuration takes precedence over the default configuration. But since the package management insists on putting the default configuration where it is, we have to fix that after the fact. For now, let&#39;s install our configuration in a different location:</p>
+<p>Holo&#39;s initial motivation was to resolve exactly these file conflicts. Since we&#39;re in the domain of configuration management, we know that our configuration takes precedence over the default configuration. But since the package management insists on putting the default configuration where it is, we have to fix that after the fact. For now, let&#39;s install our configuration in a different location:</p>
 
-<pre><code>$ pacman -Qlqp configure-bashdocserver-1.0.0-2-any.tar.xz
-/usr/
-/usr/share/
-/usr/share/holo/
-/usr/share/holo/repo/
-/usr/share/holo/repo/10-bashdocserver/
-/usr/share/holo/repo/10-bashdocserver/etc/
-/usr/share/holo/repo/10-bashdocserver/etc/nginx/
-/usr/share/holo/repo/10-bashdocserver/etc/nginx/nginx.conf</code></pre>
+<pre><code>$ cat &gt; configure-mywebserver.pkg.toml
 
-<p>The configuration has been moved to Holo&#39;s configuration repository below <i>/usr/share/holo/repo</i>. (Don&#39;t worry about the <code>10-bashdocserver</code> bit for now, we&#39;ll see why it&#39;s useful in the next example.) We also need Holo as a dependency for our configuration package:</p>
+[package]
+name     = &quot;configure-mywebserver&quot;
+version  = &quot;1.0.0&quot;
+requires = [ &quot;nginx&quot; ]
 
-<pre><code>$ pacman -Qip configure-bashdocserver-1.0.0-2-any.tar.xz
+[[symlink]]
+path   = &quot;/etc/systemd/system/multi-user.target.wants/nginx.service&quot;
+target = &quot;/usr/lib/systemd/system/nginx.service&quot;
+
+[[file]]
+path        = &quot;/usr/share/holo/repo/10-mywebserver/etc/nginx/nginx.conf&quot;
+contentFrom = &quot;nginx.conf&quot;
+
+$ holo-build &lt; configure-mywebserver.pkg.toml</code></pre>
+
+<p>The configuration file has been moved to Holo&#39;s configuration repository below <i>/usr/share/holo/repo</i>. (Don&#39;t worry about the <code>10-mywebserver</code> bit for now, we&#39;ll see why it&#39;s useful in the next example.) Since <code>holo-build</code> knows what this is, it has automatically added <code>holo</code> as a dependency for the package:</p>
+
+<pre><code>$ pacman -Qip configure-mywebserver-1.0.0-2-any.tar.xz
 ...
 Depends On     : nginx  holo
 ...</code></pre>
 
-<p>Now we can install the package, and after that, we can install the configuration from Holo&#39;s repository:</p>
+<p>And it has added a post-install script to the package that runs:</p>
 
-<pre><code>$ sudo holo apply
+<pre><code># holo apply
 
 Working on /etc/nginx/nginx.conf
   store at /var/lib/holo/base/etc/nginx/nginx.conf
-     apply /usr/share/holo/repo/10-bashdocserver/etc/nginx/nginx.conf</code></pre>
+     apply /usr/share/holo/repo/10-mywebserver/etc/nginx/nginx.conf</code></pre>
 
-<p>We can usually skip this last step since packages can include post-install/upgrade/remove routines where we can call <code>holo apply</code>, as shown in the complete source code for this example.</p>
-
-<p class="follow"><a href="./sources3.html" target="_blank">Source code for this example »</a></p>
+<p>Of course you can use <code>holo</code> without <code>holo-build</code>, too, by building packages with the standard distribution tools.</p>
 
 </div></section><section><div class="fixed-width clearfix"><h1 id="Advanced-features">4. Advanced features</h1>
 
-<p>To add to our previous scenario, let&#39;s assume that we have successfully rolled out the <code>configure-bashdocserver</code> package to multiple systems. But there is this one system where we cannot use it yet because another webserver is already running on port 80. If we want to install it, we need to change the configuration just a little bit so that nginx listens on port 8080 instead.</p>
+<p>To add to our previous scenario, let&#39;s assume that we have successfully rolled out the <code>configure-mywebserver</code> package to multiple systems, and the configuration is such that the server listens on port 80. But there is this one system where we cannot use it yet because another webserver is already running on port 80. If we want to install it, we need to change the configuration just a little bit so that nginx listens on port 8080 instead.</p>
 
 <p>Holo can help with that, too. Let&#39;s build a new configuration package that builds on the previous one, by installing it as a dependency.</p>
 
-<pre><code>$ pacman -Qip configure-bashdocserver-extra-1.0.0-1-any.tar.xz
-...
-Depends On     : configure-bashdocserver
-...</code></pre>
-
 <p>We want to reuse our configuration from before, but change it slightly. Thankfully, Holo&#39;s configuration repository can not only contain complete configuration files, but also scripts that modify the configuration file (identified by the <code>.holoscript</code> extension):</p>
 
-<pre><code>$ pacman -Qlqp configure-bashdocserver-extra-1.0.0-1-any.tar.xz
-/usr/
-/usr/share/
-/usr/share/holo/
-/usr/share/holo/repo/
-/usr/share/holo/repo/20-alternate-port/
-/usr/share/holo/repo/20-alternate-port/etc/
-/usr/share/holo/repo/20-alternate-port/etc/nginx/
-/usr/share/holo/repo/20-alternate-port/etc/nginx/nginx.conf.holoscript</code></pre>
+<pre><code>$ cat &gt; configure-mywebserver-alternateport.pkg.toml
 
-<p>A holoscript receives the original configuration file on stdin and prints the modified version on stdout. In this case, we modify the <code>listen 80</code> directive.</p>
+[package]
+name     = &quot;configure-mywebserver-alternateport&quot;
+version  = &quot;1.0.0&quot;
+requires = [ &quot;configure-mywebserver&quot; ]
 
-<pre><code>$ cat nginx.conf.holoscript
-#!/bin/sh
-sed &#39;s/listen\s*80;/listen 8080;/&#39;</code></pre>
+[[file]]
+path    = &quot;/usr/share/holo/repo/20-alternate-port/etc/nginx/nginx.conf.holoscript&quot;
+mode    = &quot;0755&quot;
+content = &quot;&quot;&quot;
+    #!/bin/sh
+    sed &#39;s/listen\s*80;/listen 8080;/&#39;
+&quot;&quot;&quot;
 
-<p>When running <code>holo apply</code>, this script will be applied to the configuration from the previous configuration package.</p>
+$ holo-build &lt; configure-mywebserver-alternateport.pkg.toml</code></pre>
 
-<pre><code>$ sudo holo apply
+<p>A holoscript receives the original configuration file on stdin and prints the modified version on stdout. In this case, we modify the <code>listen 80</code> directive. When running <code>holo apply</code> while installing the package, this script will be applied to the configuration from the previous configuration package.</p>
+
+<pre><code># holo apply
 
 Working on /etc/nginx/nginx.conf
-     apply /usr/share/holo/repo/10-bashdocserver/etc/nginx/nginx.conf
+     apply /usr/share/holo/repo/10-mywebserver/etc/nginx/nginx.conf
   passthru /usr/share/holo/repo/20-alternate-port/etc/nginx/nginx.conf.holoscript</code></pre>
 
-<p>The order in which repository files are applied is defined by the directory names below <i>/usr/share/holo/repo</i> (<code>10-bashdocserver</code> and <code>20-alternate-port</code>), which we call <i>disambiguators</i>.</p>
+<p>The order in which repository files are applied is defined by the directory names below <i>/usr/share/holo/repo</i> (<code>10-mywebserver</code> and <code>20-alternate-port</code>), which we call <i>disambiguators</i>.</p>
 
 <p>Holoscripts can also be used on their own, without a plain configuration coming before it. In this case, the holoscript modifies the default configuration installed by the application package.</p>
-
-<p class="follow"><a href="./sources4.html" target="_blank">Source code for this example »</a></p>
 
 </div></section><section><div class="fixed-width clearfix"><h1 id="Just-how-tiny-is-Holo">5. Just how tiny is Holo?</h1>
 
 <p>This tiny:</p>
 
-<pre><code>$ ls -lh /usr/bin/holo
--rwxr-xr-x 1 root root 3.3M 20. Sep 01:42 /usr/bin/holo
-$ ldd /usr/bin/holo
-      not a dynamic executable</code></pre>
+<pre><code>$ ls -lh /usr/bin/holo*
+-rwxr-xr-x 1 root root 2,8M  6. Nov 22:38 /usr/bin/holo
+-rwxr-xr-x 1 root root 2,6M  6. Nov 22:38 /usr/bin/holo-build</code></pre>
 
-<p>Holo comes in one single static binary which is trivial to deploy even during initial setup of your system. To install it on your system as well, have a look at the user documentation.</p>
+<p>Holo comes in two static binaries which are trivial to deploy even during initial setup of your system. To install it on your system as well, have a look at the user documentation.</p>
 
 <p class="follow"><a href="./doc.html">Read the documentation »</a></p></div></section>
     </div>
