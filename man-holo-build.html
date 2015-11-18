@@ -42,6 +42,7 @@
 <pre><code>[package]
 name     = &quot;hologram-systemd-timesyncd&quot;
 version  = &quot;1.0&quot;
+author   = &quot;Jane Doe &lt;jane.doe@example.org&gt;&quot;
 requires = [&quot;systemd&quot;]
 setupScript   = &quot;systemctl daemon-reload &amp;&amp; systemctl start systemd-timesyncd&quot;
 cleanupScript = &quot;systemctl stop systemd-timesyncd&quot;
@@ -73,7 +74,32 @@ target   = &quot;/usr/lib/systemd/system/systemd-timesyncd.service&quot;</code><
 <dt id="pacman"><b>--pacman</b></dt>
 <dd>
 
-<p>Generate a <code>pacman</code> package (suitable for Arch Linux and derivatives). This is currently the only available format, but once there are multiple output formats available, this switch can be used to override format auto-selection (which checks the current distribution).</p>
+<p>Generate a <code>pacman</code> package (suitable for Arch Linux and derivatives). This is the default under suitable distributions.</p>
+
+</dd>
+<dt id="debian"><b>--debian</b></dt>
+<dd>
+
+<p>Generate a Debian package (suitable for Debian and derivatives). This is the default under suitable distributions.</p>
+
+</dd>
+<dt id="suggest-filename"><b>--suggest-filename</b></dt>
+<dd>
+
+<p>Do not generate a package. After reading and validating the package definition, just print on standard output the suggested filename for this package. The printed file name is the same one that will be used when <code>--no-stdout</code> is in effect. The format for package filenames follows the recommendations of the targeted distribution:</p>
+
+<pre><code>$ cat input.toml
+
+[package]
+name = &quot;foo&quot;
+version = &quot;1.0&quot;
+
+$ holo-build --suggest-filename --debian &lt; input.toml
+the-package_1.0-1_any.deb
+$ holo-build --suggest-filename --pacman &lt; input.toml
+the-package-1.0-1-any.pkg.tar.xz</code></pre>
+
+<p>This option can be used when auto-generating Makefiles, where the output filename needs to be known before <code>holo-build</code> runs (for purposes of dependency resolution).</p>
 
 </dd>
 <dt id="reproducible"><b>--reproducible</b></dt>
@@ -116,6 +142,7 @@ version = &quot;1.2.5-alpha.2&quot;
 epoch   = 2
 release = 3
 description = &quot;An example package&quot;
+author      = &quot;Jane Doe &lt;jane.doe@example.org&gt;&quot;
 requires    = [ &quot;other-package &gt;= 2.0&quot; ]
 provides    = [ &quot;example-package-api = 1.2&quot; ]
 conflicts   = [ &quot;bloatware-package&quot; ]
@@ -129,6 +156,8 @@ cleanupScript = &quot;rm -r /var/lib/example&quot;</code></pre>
 <dd>
 
 <p>The package name. This string may never contain any slashes or newlines. The output format may impose additional charset or size restrictions on the package name. As a rule of thumb, the pattern <code>[a-z0-9-]+</code> is a safe set of allowed package names.</p>
+
+<p>For <code>--debian</code>, the package name may contain <code>[a-z0-9+-.]</code>, but the first character must be alphanumeric.</p>
 
 <p>For <code>--pacman</code>, the package name may contain <code>[a-z0-9@._+-]</code>, but the first character may not be a hyphen.</p>
 
@@ -160,6 +189,15 @@ version = &quot;2015.10.15&quot;</code></pre>
 <dd>
 
 <p>A description of the purpose and contents of this package.</p>
+
+</dd>
+<dt id="author-string-required-for---debian"><b>author</b> (string, required for <code>--debian</code>)</dt>
+<dd>
+
+<p>The name and mail address of the package author, in the form <code>Name &lt;address&gt;</code>:</p>
+
+<pre><code>[package]
+author = &quot;Jane Doe &lt;jane.doe@example.org&gt;&quot;</code></pre>
 
 </dd>
 <dt id="requires-array-of-strings"><b>requires</b> (array of strings)</dt>
@@ -198,6 +236,8 @@ requires = [
 name     = &quot;rewrite-of-foo&quot;
 provides = [ &quot;foo = 2.1&quot; ] # this package acts like foo-2.1</code></pre>
 
+<p>For <code>--debian</code>, the provided version syntax is not allowed. <code>provides</code> may only contain plain package names.</p>
+
 </dd>
 <dt id="conflicts-array-of-strings"><b>conflicts</b> (array of strings)</dt>
 <dd>
@@ -227,6 +267,12 @@ provides = [ &quot;foo = 2.1&quot; ] # this package acts like foo-2.1</code></pr
 <p>A shell script that will be executed (as root) when the package is being uninstalled, after the package files have been removed from the file system.</p>
 
 <p>If the package contains any files below <i>/usr/share/holo</i>, then <code>holo apply</code> will automatically run before this cleanup script is executed.</p>
+
+</dd>
+<dt id="definitionFile-string"><b>definitionFile</b> (string)</dt>
+<dd>
+
+<p>A path where <code>[[user]]</code> and <code>[[group]]</code> sections will be placed inside the package. See the description of <code>[[user]]</code> and <code>[[group]]</code> sections below.</p>
 
 </dd>
 </dl>
@@ -370,7 +416,49 @@ target = &quot;bar.conf&quot;</code></pre>
 <p>The symlink target. Both relative and absolute targets are acceptable.</p>
 
 </dd>
-</dl></div></section>
+</dl>
+
+<h2 id="user-and-group-sections"><code>[[user]]</code> and <code>[[group]]</code> sections</h2>
+
+<p>These can be used to provision user accounts and groups when the package is installed. For example:</p>
+
+<pre><code>[package]
+name           = &quot;foobar&quot;
+version        = &quot;1.0&quot;
+definitionFile = &quot;/usr/share/holo/01-example.toml&quot;
+
+[[group]]
+name   = &quot;foobargroup&quot;
+system = true
+
+[[user]]
+name   = &quot;foobaruser&quot;
+uid    = 285
+group  = &quot;foobargroup&quot;</code></pre>
+
+<p>The user and group definitions are validated at package compilation time, and written into the file named in the <code>[package]</code> section. Since this file must be in <i>/usr/share/holo</i>, a dependency on <code>holo</code> is implied and <code>holo apply</code> is executed in the setup and cleanup scripts. So the previous example is functionally equivalent to:</p>
+
+<pre><code>[package]
+name          = &quot;foobar&quot;
+version       = &quot;1.0&quot;
+depends       = [&quot;holo&quot;]
+setupScript   = &quot;holo apply&quot;
+cleanupScript = &quot;holo apply&quot;
+
+[[file]]
+path    = &quot;/usr/share/holo/01-example.toml&quot;
+content = &quot;&quot;&quot;
+    [[group]]
+    name   = &quot;foobargroup&quot;
+    system = true
+
+    [[user]]
+    name   = &quot;foobaruser&quot;
+    uid    = 285
+    group  = &quot;foobargroup&quot;
+&quot;&quot;&quot;</code></pre>
+
+<p>The actual syntax and semantics of <code>[[user]]</code> and <code>[[group]]</code> sections is described in <a href="http://man.he.net/man8/holo">holo(8)</a>.</p></div></section>
     </div>
     <footer>
         <div class="fixed-width clearfix">

@@ -95,6 +95,10 @@ shell   = &quot;/usr/bin/zsh&quot;       # string,  given to useradd as --shell<
 
 <p>In either case, <code>name</code> is the only required attribute. Multiple entity definitions may apply to the same entity if they have the same <code>name</code> attribute. This can be useful if a base hologram creates the entity and a later hologram requires more specific configuration for this entity. When entity definitions are stacked on each other, they are not allowed to contradict one another. (Different lists of auxiliary groups are allowed and will be merged.)</p>
 
+<h2 id="Running-custom-scripts-during-provisioning">Running custom scripts during provisioning</h2>
+
+<p>Executable files placed at <i>/usr/share/holo/provision/</i> will be run (in alphabetical order) by <code>holo apply</code> after all other entities (files, users and groups) have been provisioned.</p>
+
 <h2 id="Dealing-with-manual-changes">Dealing with manual changes</h2>
 
 <p>When an entity (target file, user or group) provisioned by Holo is modified by the user or another program, the next <code>holo apply</code> run will complain about this and refuse to overwrite the manual changes.</p>
