@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="de">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Holo - Minimalistic Configuration Management</title>
+    <link rel="stylesheet" type="text/css" href="./site.css">
+    <link rel="stylesheet" type="text/css" href="./font/font-awesome.min.css">
+    
+</head>
+<body>
+    <header>
+        <div id="header-container">
+            <div id="header-icon" class="fixed-width">
+                <a href="index.html"><img src="img/holo-logo.svg" alt="Holo"></a>
+            </div>
+            <div id="header-buttons" class="fixed-width">
+                <a href="https://twitter.com/holocm" title="Follow on Twitter"><i class="fa fa-twitter"></i></a>
+                <a href="https://github.com/holocm/holo" title="Fork on GitHub"><i class="fa fa-github"></i></a>
+            </div>
+        </div>
+    </header>
+    <div id="section-container">
+        <section><div class="fixed-width clearfix"><h1 id="Name">Name</h1>
+
+<p>holo-plugin-interface - API specification for Holo plugins</p>
+
+</div></section><section><div class="fixed-width clearfix"><h1 id="Description">Description</h1>
+
+<p>Holo can leverage plugins to provision previously unknown entity types. For example, given a hypothetical &quot;FooSQL&quot; database, someone could implement a plugin for Holo that provisions FooSQL databases or database users. This document describes the interface that Holo uses to find, invoke, and communicate with its plugins.</p>
+
+<p>This interface is deliberately designed around classic files and text streams, so that it can easily be implemented even by shell scripts without needing to resort to complex parser libraries.</p>
+
+<p>This document describes <b>version 1</b> of the Holo plugin interface.</p>
+
+<p>The key words &quot;MUST&quot;, &quot;MUST NOT&quot;, &quot;REQUIRED&quot;, &quot;SHALL&quot;, &quot;SHALL NOT&quot;, &quot;SHOULD&quot;, &quot;SHOULD NOT&quot;, &quot;RECOMMENDED&quot;, &quot;MAY&quot;, and &quot;OPTIONAL&quot; in this document are to be interpreted as described in <a href="https://tools.ietf.org/html/rfc2119">RFC 2119</a>.</p>
+
+<h2 id="Plugin-discovery">Plugin discovery</h2>
+
+<p>Each plugin MUST have an ID following the format <code>[a-z0-9][a-z0-9-]*</code>. When choosing the plugin ID, redundant verbs like <code>manage</code> or <code>provision</code> SHOULD be avoided. For example, an appropriate plugin ID for the aforementioned FooSQL plugin would be <code>foosql</code>. The things provisioned MAY be referenced in plural form if disambiguation is required. For example, if FooSQL is configured by multiple plugins, appropriate plugin IDs could include <code>foosql-databases</code> and <code>foosql-users</code>.</p>
+
+<p>Plugins are not discovered automatically. They MUST be referenced in <i>/etc/holorc</i> (see <a href="http://man.he.net/man5/holorc">holorc(5)</a>) by adding the line:</p>
+
+<pre><code>plugin $PLUGIN_ID</code></pre>
+
+<p>It is RECOMMENDED that plugins install a holoscript to achieve this:</p>
+
+<pre><code>$ cat /usr/share/holo/files/50-holo-foosql/etc/holorc.holoscript
+#!/bin/sh
+# This file is part of the holo-foosql package.
+cat
+echo plugin foosql</code></pre>
+
+<h2 id="Runtime-environment">Runtime environment</h2>
+
+<h3 id="HOLO_API_VERSION">HOLO_API_VERSION</h3>
+
+<p>Plugins SHOULD check the environment variable <code>$HOLO_API_VERSION</code>, which is set by Holo to contain the current version number of this plugin interface. The value is always a single positive integer number, currently <code>1</code>. Plugins SHOULD refuse to operate, and exit with an error message and non-zero exit code when Holo reports an unknown Holo API version.</p>
+
+<h3 id="HOLO_ROOT_DIR">HOLO_ROOT_DIR</h3>
+
+<p>Plugins MUST recognize the environment variable <code>$HOLO_ROOT_DIR</code>: If this variable exists, plugins SHALL assume that Holo is running in test mode. The variable holds the path to a directory which contains a test scenario resembling a normal root partition (at least the parts needed for the test scenario).</p>
+
+<p>In test mode, plugins SHOULD NOT talk to system-level daemons or write files outside the <code>$HOLO_ROOT_DIR</code>. Appropriate mock implementations SHALL be used instead. Modifying files below <code>$HOLO_ROOT_DIR</code> is allowed.</p>
+
+<h3 id="HOLO_CACHE_DIR">HOLO_CACHE_DIR</h3>
+
+<p>When plugins want to store temporary data (such as results from an initial scan operation), they SHALL do so in the directory published by Holo in the <code>$HOLO_CACHE_DIR</code> environment variable. Holo will create this directory when it starts up, and clean it up when it exits.</p>
+
+<h3 id="HOLO_STATE_DIR">HOLO_STATE_DIR</h3>
+
+<p>When plugins need to store state persistently, between runs of Holo, they SHALL do so in the directory <code>/var/lib/holo/$PLUGIN_ID/</code>, published by Holo in the <code>$HOLO_STATE_DIR</code> environment variable. Plugins SHOULD use this variable instead of its definition, since <code>$HOLO_STATE_DIR</code> already accounts for <code>$HOLO_ROOT_DIR</code>. If the state directory is missing, Holo will create it before calling the plugin executable. However, plugins are encouraged to create the state directory at their installation time.</p>
+
+<h3 id="HOLO_RESOURCE_DIR">HOLO_RESOURCE_DIR</h3>
+
+<p>Plugins SHALL find their resources (installed by configuration packages) below <i>/usr/share/holo/$PLUGIN_ID/</i>. This path is published by Holo in the <code>$HOLO_RESOURCE_DIR</code> environment variable. Plugins SHOULD use this variable instead of its definition, since <code>$HOLO_RESOURCE_DIR</code> already accounts for <code>$HOLO_ROOT_DIR</code>. Holo will refuse to operate if the resource directory does not exist, thus plugins SHOULD create it at installation time.</p>
+
+<h2 id="Call-signatures">Call signatures</h2>
+
+<h3 id="The-scan-operation">The <code>scan</code> operation</h3>
+
+<p>The plugin binary is executed one or multiple times when Holo is run. The first invocation is always with the single argument <code>scan</code>:</p>
+
+<pre><code>PLUGIN_BINARY=/usr/lib/holo/holo-$PLUGIN_ID
+$PLUGIN_BINARY scan</code></pre>
+
+<p>The plugin shall then scan its <code>$HOLO_RESOURCE_DIR</code> for entities that it can provision. Any errors encountered shall be reported on stderr. If any fatal errors are encountered, the plugin shall exit with non-zero exit code.</p>
+
+<p>At the end of scanning, the plugin shall provide on stdout a report for each of the entities found, in the following form (this example being from the <code>files</code> plugin from core Holo):</p>
+
+<pre><code>ENTITY: /etc/locale.gen
+store at: /var/lib/holo/base/etc/locale.gen
+apply: /usr/share/holo/files/00-base/etc/locale.gen</code></pre>
+
+<p>The first line is always <code>ENTITY:</code>, followed by the ID of the entity that is being described. When an entity is not equivalent to a file, the recommended format for entity IDs is <code>type:identifier</code>, with the type in singular form. For example, the hypothetical <code>foosql</code> plugin could report entities like <code>foosql-db:production</code> or <code>foosql-user:sarah</code>.</p>
+
+<p>The following lines contain further information in the form <code>attribute: value</code>. These informational lines are not processed further by Holo (except for pretty-printing), and can be used to convey any sort of useful information about the entity to the user. In the example above, the information lines show the application steps that are being performed by <code>holo apply</code>.</p>
+
+<p>For entities that have been read from definition files, it is considered good practice to list the definition files with the attribute <code>found in</code>, as does the core <code>users-groups</code> plugin:</p>
+
+<pre><code>ENTITY: group:sudo
+found in: /usr/share/holo/users-groups/00-base.toml
+with: type: system</code></pre>
+
+<p>A special line syntax is <code>ACTION: verb (reason)</code>. This is used when applying the entity will do something else than provisioning it. The line shall contain a verb describing the action taken, and a reason for doing so. For example, the <code>files</code> plugin uses the action verb <code>Scrubbing</code> to signal that a deleted configuration file is being cleaned up after.</p>
+
+<pre><code>ENTITY: target/etc/targetfile-deleted.conf
+ACTION: Scrubbing (target was deleted)
+delete: target/var/lib/holo/files/base/etc/targetfile-deleted.conf</code></pre>
+
+<p>The report for an entity ends at the next <code>ENTITY: ID</code> line, or when EOF is encountered.</p>
+
+<p>If scanning for entities is expensive, plugins should cache results of their scanning in <code>$HOLO_CACHE_DIR</code> (as described above).</p>
+
+<h3 id="The-apply-operation">The <code>apply</code> operation</h3>
+
+<p>If the user requests that one or multiple entities be provisioned (with the <code>holo apply</code> command), then for each of the selected entities, the corresponding plugin will be called like this:</p>
+
+<pre><code>$PLUGIN_BINARY apply $ENTITY_ID</code></pre>
+
+<p>During this operation, the plugin can reuse results from the previously conducted scanning operation if they have been cached in <code>$HOLO_CACHE_DIR</code>. Informational output shall be printed on stdout, errors and warnings shall be printed on stderr. This output will be passed on to the user directly. If an error occurred during provisioning, the plugin shall exit with non-zero exit code.</p>
+
+<p>If the plugin finds that the selected entity is already in the desired state, so that no changes need to made to it, it can write the message <code>&quot;not changed\n&quot;</code> to file descriptor no. 3 (which has been opened by Holo). Holo will then format its output accordingly (at the time of this writing, by omitting the entity from its output).</p>
+
+<h3 id="The-force-apply-operation">The <code>force-apply</code> operation</h3>
+
+<p>During the <code>apply</code> operation, plugins shall refuse to provision entities that appear to have been edited or deleted by the user or an external application. (&quot;Refuse&quot; means to display an error message and exit with non-zero exit code.) However, when the plugin is called like this:</p>
+
+<pre><code>$PLUGIN_BINARY force-apply $ENTITY_ID</code></pre>
+
+<p>Then the plugin shall overwrite any external changes to the selected entity and bring it into the desired target state with all means possible. Otherwise, the <code>force-apply</code> operation works just like <code>apply</code>.</p>
+
+<h3 id="The-diff-operation">The <code>diff</code> operation</h3>
+
+<p>If the user requests that a diff be printed for one or multiple entities (with the <code>holo diff</code> command), then for each of the selected entities, the corresponding plugin will be called like this:</p>
+
+<pre><code>$PLUGIN_BINARY diff $ENTITY_ID</code></pre>
+
+<p>If the plugin cannot produce a meaningful diff (e.g. for the <code>run-scripts</code> plugin), the plugin shall exit with zero exit code without printing any output. In any other event, a unified diff MUST be printed on stdout. If errors occur while producing the diff, they shall be reported on stderr. If the error results in the plugin not being able to produce meaningful output, it shall exit with non-zero exit code.</p>
+
+<p>For entities that are not backed by a file, the plugin is allowed to make up a diff by choosing a useful textual representation of the entity. An example of this is the <code>users-groups</code> plugin included in Holo.</p>
+
+</div></section><section><div class="fixed-width clearfix"><h1 id="See-also">See also</h1>
+
+<p><a href="http://man.he.net/man8/holo">holo(8)</a></p>
+
+</div></section><section><div class="fixed-width clearfix"><h1 id="Author">Author</h1>
+
+<p>Stefan Majewsky</p>
+
+<p>Further documentation is available at the project homepage: http://holocm.org</p>
+
+<p>Please report any issues and feature requests at Github: http://github.com/holocm/holo/issues</p></div></section>
+    </div>
+    <footer>
+        <div class="fixed-width clearfix">
+            This website is made with <a href="http://montserrat.zkysky.com.ar/en">Montserrat</a>
+            and <a href="http://fontawesome.io">FontAwesome</a>
+            and <a href="https://github.com/holocm/holocm.github.io">maintained at GitHub</a>.
+        </div>
+    </footer>
+</body>
+</html>

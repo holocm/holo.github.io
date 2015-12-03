@@ -92,16 +92,16 @@ path   = &quot;/etc/systemd/system/multi-user.target.wants/nginx.service&quot;
 target = &quot;/usr/lib/systemd/system/nginx.service&quot;
 
 [[file]]
-path        = &quot;/usr/share/holo/repo/10-mywebserver/etc/nginx/nginx.conf&quot;
+path        = &quot;/usr/share/holo/files/10-mywebserver/etc/nginx/nginx.conf&quot;
 contentFrom = &quot;nginx.conf&quot;
 
 $ holo-build &lt; configure-mywebserver.pkg.toml</code></pre>
 
-<p>The configuration file has been moved to Holo&#39;s configuration repository below <i>/usr/share/holo/repo</i>. (Don&#39;t worry about the <code>10-mywebserver</code> bit for now, we&#39;ll see why it&#39;s useful in the next example.) Since <code>holo-build</code> knows what this is, it has automatically added <code>holo</code> as a dependency for the package:</p>
+<p>The configuration file has been moved to Holo&#39;s resource directory below <i>/usr/share/holo/files</i>. (Don&#39;t worry about the <code>10-mywebserver</code> bit for now, we&#39;ll see why it&#39;s useful in the next example.) Since <code>holo-build</code> knows what this is, it has automatically added <code>holo-files</code> (the Holo plugin for provisioning configuration files) as a dependency for the package:</p>
 
 <pre><code>$ pacman -Qip configure-mywebserver-1.0.0-2-any.tar.xz
 ...
-Depends On     : nginx  holo
+Depends On     : nginx  holo-files
 ...</code></pre>
 
 <p>And it has added a post-install script to the package that runs:</p>
@@ -109,8 +109,8 @@ Depends On     : nginx  holo
 <pre><code># holo apply
 
 Working on /etc/nginx/nginx.conf
-  store at /var/lib/holo/base/etc/nginx/nginx.conf
-     apply /usr/share/holo/repo/10-mywebserver/etc/nginx/nginx.conf</code></pre>
+  store at /var/lib/holo/files/base/etc/nginx/nginx.conf
+     apply /usr/share/holo/files/10-mywebserver/etc/nginx/nginx.conf</code></pre>
 
 <p>Of course you can use <code>holo</code> without <code>holo-build</code>, too, by building packages with the standard distribution tools.</p>
 
@@ -130,7 +130,7 @@ version  = &quot;1.0.0&quot;
 requires = [ &quot;configure-mywebserver&quot; ]
 
 [[file]]
-path    = &quot;/usr/share/holo/repo/20-alternate-port/etc/nginx/nginx.conf.holoscript&quot;
+path    = &quot;/usr/share/holo/files/20-alternate-port/etc/nginx/nginx.conf.holoscript&quot;
 mode    = &quot;0755&quot;
 content = &quot;&quot;&quot;
     #!/bin/sh
@@ -144,22 +144,13 @@ $ holo-build &lt; configure-mywebserver-alternateport.pkg.toml</code></pre>
 <pre><code># holo apply
 
 Working on /etc/nginx/nginx.conf
-     apply /usr/share/holo/repo/10-mywebserver/etc/nginx/nginx.conf
-  passthru /usr/share/holo/repo/20-alternate-port/etc/nginx/nginx.conf.holoscript</code></pre>
+  store at /var/lib/holo/files/base/etc/nginx/nginx.conf
+     apply /usr/share/holo/files/10-mywebserver/etc/nginx/nginx.conf
+  passthru /usr/share/holo/files/20-alternate-port/etc/nginx/nginx.conf.holoscript</code></pre>
 
-<p>The order in which repository files are applied is defined by the directory names below <i>/usr/share/holo/repo</i> (<code>10-mywebserver</code> and <code>20-alternate-port</code>), which we call <i>disambiguators</i>.</p>
+<p>The order in which repository files are applied is defined by the directory names below <i>/usr/share/holo/files</i> (<code>10-mywebserver</code> and <code>20-alternate-port</code>), which we call <i>disambiguators</i>.</p>
 
 <p>Holoscripts can also be used on their own, without a plain configuration coming before it. In this case, the holoscript modifies the default configuration installed by the application package.</p>
-
-</div></section><section><div class="fixed-width clearfix"><h1 id="Just-how-tiny-is-Holo">5. Just how tiny is Holo?</h1>
-
-<p>This tiny:</p>
-
-<pre><code>$ ls -lh /usr/bin/holo*
--rwxr-xr-x 1 root root 2,8M  6. Nov 22:38 /usr/bin/holo
--rwxr-xr-x 1 root root 2,6M  6. Nov 22:38 /usr/bin/holo-build</code></pre>
-
-<p>Holo comes in two static binaries which are trivial to deploy even during initial setup of your system. To install it on your system as well, have a look at the user documentation.</p>
 
 <p class="follow"><a href="./doc.html">Read the documentation »</a></p></div></section>
     </div>

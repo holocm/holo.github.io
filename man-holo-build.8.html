@@ -209,9 +209,9 @@ author = &quot;Jane Doe &lt;jane.doe@example.org&gt;&quot;</code></pre>
 # require any version of foo, and a 2.x version of bar
 requires = [ &quot;foo&quot;, &quot;bar &gt;= 2.0&quot;, &quot;bar &lt; 3.0&quot; ]</code></pre>
 
-<p>When the package contains any files below <code>/usr/share/holo</code>, a requirement</p>
+<p>When the package contains any files below <code>/usr/share/holo/$PLUGIN_ID</code>, a requirement</p>
 
-<pre><code>requires = [ &quot;holo&quot; ]</code></pre>
+<pre><code>requires = [ &quot;holo-$PLUGIN_ID&quot; ]</code></pre>
 
 <p>is implied automatically.</p>
 
@@ -425,7 +425,7 @@ target = &quot;bar.conf&quot;</code></pre>
 <pre><code>[package]
 name           = &quot;foobar&quot;
 version        = &quot;1.0&quot;
-definitionFile = &quot;/usr/share/holo/01-example.toml&quot;
+definitionFile = &quot;/usr/share/holo/users-groups/01-example.toml&quot;
 
 [[group]]
 name   = &quot;foobargroup&quot;
@@ -436,7 +436,7 @@ name   = &quot;foobaruser&quot;
 uid    = 285
 group  = &quot;foobargroup&quot;</code></pre>
 
-<p>The user and group definitions are validated at package compilation time, and written into the file named in the <code>[package]</code> section. Since this file must be in <i>/usr/share/holo</i>, a dependency on <code>holo</code> is implied and <code>holo apply</code> is executed in the setup and cleanup scripts. So the previous example is functionally equivalent to:</p>
+<p>The user and group definitions are validated at package compilation time, and written into the file named in the <code>[package]</code> section. Since this file must be in <i>/usr/share/holo/users-groups</i>, a dependency on <code>holo-users-groups</code> is implied and <code>holo apply</code> is executed in the setup and cleanup scripts. So the previous example is functionally equivalent to:</p>
 
 <pre><code>[package]
 name          = &quot;foobar&quot;
@@ -446,7 +446,7 @@ setupScript   = &quot;holo apply&quot;
 cleanupScript = &quot;holo apply&quot;
 
 [[file]]
-path    = &quot;/usr/share/holo/01-example.toml&quot;
+path    = &quot;/usr/share/holo/users-groups/01-example.toml&quot;
 content = &quot;&quot;&quot;
     [[group]]
     name   = &quot;foobargroup&quot;
