@@ -46,9 +46,9 @@
         <div class="standout"><img src="img/diagram-files3.svg"></div>
         <div class="fixed-width clearfix">
             <p>The hologram installs its custom configuration file to a separate location at <code>/usr/share/holo/files</code>. Holo then places it in the right path, usually during the post-install script of the hologram:</p>
-            <pre><code># holo apply /etc/sudoers
+            <pre><code># holo apply file:/etc/sudoers
 
-Working on <b>/etc/sudoers</b>
+Working on <b>file:/etc/sudoers</b>
   store at /var/lib/holo/files/base/etc/sudoers
      apply /usr/share/holo/files/50-config/etc/sudoers</code></pre>
             <h1>Modifying existing configurations</h1>
@@ -57,9 +57,9 @@ Working on <b>/etc/sudoers</b>
         <div class="standout"><img src="img/diagram-files4.svg"></div>
         <div class="fixed-width clearfix">
             <p>During the first <tt>holo apply</tt>, Holo will store the default configuration as the <b>target base</b> for this target file, and pass its contents through the script from the hologram to produce the target configuration file:
-            <pre><code># holo apply /etc/sudoers
+            <pre><code># holo apply file:/etc/sudoers
 
-Working on <b>/etc/sudoers</b>
+Working on <b>file:/etc/sudoers</b>
   store at /var/lib/holo/files/base/etc/sudoers
   <span class="highlight">passthru</span> /usr/share/holo/files/50-config/etc/sudoers<span class="highlight">.holoscript</span></code></pre>
             <p>This pattern can be extended very naturally to allow multiple holograms to work on the same target file. The <a href="https://github.com/holocm/holo/blob/master/doc/holo-files.8.pod">manpage for the holo-files plugin</a> has all the details.</p>
