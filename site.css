@@ -58,8 +58,8 @@ body {
 }
 
 #pitch-logo img {
-    height: 400px;
-    max-height: 30vh;
+    width: 800px;
+    max-width: 80vw;
 }
 #pitch-text-1 {
     font-size: 2rem;
