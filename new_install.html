@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Holo - Example</title>
+    <link rel="stylesheet" type="text/css" href="./new_site.css">
+    <link rel="stylesheet" type="text/css" href="./font/font-awesome.min.css">
+</head>
+<body>
+    <header>
+        <div id="header-buttons">
+            <a href="https://twitter.com/holocm" title="Follow on Twitter"><i class="fa fa-twitter"></i></a>
+            <a href="https://github.com/holocm" title="Fork on GitHub"><i class="fa fa-github"></i></a>
+        </div>
+        <div id="small-logo">
+            <a href="./new_index.html"><img src="img/holo-logo.svg"></a>
+        </div>
+    </header>
+    <section>
+        <h1>How to install Holo</h1>
+        <p>Whenever possible, install Holo as a package. (Packagers are still needed for Debian, Fedora, Suse etc. Please help if you can.)</p>
+        <h2>From source</h2>
+        <p>Alternatively, install from source by cloning the corresponding Git repos and looking at the <tt>README.md</tt>:</p>
+        <ul>
+            <li>the core execuable: <a href="https://github.com/holocm/holo">holo</a></li>
+            <li>optional plugins for Holo: <a href="https://github.com/holocm/holo-users-groups">holo-users-groups</a>, <a href="https://github.com/holocm/holo-ssh-keys">holo-ssh-keys</a> and <a href="https://github.com/holocm/holo-run-scripts">holo-run-scripts</a></li>
+            <li>the package building tool: <a href="https://github.com/holocm/holo-build">holo-build</a></li>
+        </ul>
+        <h2>Arch Linux packages</h2>
+        <p>Packages are available from the <a href="https://aur.archlinux.org/packages/?K=holo&SeB=n">AUR</a>. If you prefer precompiled packages, you can use our repository (only available for x86_64 at the moment). Add the following to your <tt>/etc/pacman.conf</tt>:
+        <pre>[holo]
+Server = https://repo.holocm.org/archlinux/$arch</pre>
+        <p>The packages are signed with GPG, so you need to import and trust the signing key:</p>
+        <pre>$ sudo pacman-key -r 0xF7A9C9DC4631BD1A
+$ sudo pacman-key -f 0xF7A9C9DC4631BD1A
+#     check the key fingerprint before continuing, it should be:
+#     2A53 49F6 B4D7 305A 85DE  D8D4 F7A9 C9DC 4631 BD1A
+$ sudo pacman-key --lsign-key 0xF7A9C9DC4631BD1A</pre>
+        <p>To get a list of all packages in this repo, do:</p>
+        <pre>$ sudo pacman -Syl holo</pre>
+    </section>
+</body>
+</html>
