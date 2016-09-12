@@ -17,7 +17,7 @@ html, body {
     padding: 0;
     background: white;
     color: black;
-    font-family: "Source Sans Pro", sans-serif;
+    font-family: "Source Sans Pro","Noto Sans",sans-serif;
     font-size: 16px; /* TODO: responsive? */
     text-rendering: optimizeLegibility;
     font-variant-ligatures: common-ligatures discretionary-ligatures;
@@ -36,6 +36,7 @@ header:before, header:after, section:before, section:after {
 section {
     max-width: 60rem; /* = 960px for root-em = 16px */
     margin: 0 auto;
+    padding: 0 1rem;
 }
 
 section a, span.highlight {
@@ -50,6 +51,14 @@ section a:hover, section a:active, section a:focus {
     text-decoration: underline !important;
 }
 
+section h1 {
+    font-size: 1.7rem;
+}
+
+section h2 {
+    font-size: 1.5rem;
+}
+
 /******************** rules for <header> ********************/
 
 header {
@@ -57,7 +66,7 @@ header {
     color: #00C7FF;
     font-family: Montserrat, sans-serif;
     text-align: center;
-    min-height: 64px; /* for div#header-buttons */
+    min-height: 48px; /* for div#header-buttons */
 }
 
 #header-buttons {
@@ -74,16 +83,27 @@ header {
     color: inherit !important;
     text-decoration: none !important;
     margin-right: 0.5rem;
+    line-height: 48px;
 }
 
 #header-buttons a:hover, #header-buttons a:active, #header-buttons a:focus {
     color: white !important;
 }
 
+div#small-logo {
+    height: 48px;
+    max-width: 60rem; /* like <section> */
+    margin: 0 auto;
+}
+
+div#small-logo img {
+    height: 100%;
+    display: block;
+}
 
 /******************** index.html: first <section> with logo and tagline ********************/
 
-h1 {
+header h1 {
     margin: 1rem 0.5rem 3rem 0.5rem;
     font-size: 2rem;
     font-weight: normal;
@@ -98,8 +118,11 @@ h1 > img {
 }
 
 @media(max-width:30rem) {
-    h1 {
+    header h1 {
         font-size: 1.5rem; /* use linear interpolation instead of fixed sizes */
+    }
+    header h1 > img {
+        margin-top: 3rem;
     }
 }
 
@@ -107,6 +130,7 @@ h1 > img {
 
 section.flex {
     display: flex;
+    padding: 0;
 }
 
 section.flex > div {
@@ -191,17 +215,14 @@ p.buttons a.button:hover, p.buttons a.button:active, p.buttons a.button:focus {
     color: white !important;
 }
 
-/******************** index.html: third <section> with example pkg.toml ********************/
+/******************** example.html: code snippets ********************/
 
-td.code {
-    width: 40rem;
-    padding: 0 0.5rem 1rem 1rem;
+pre {
+    max-width: 100%;
+    overflow-x: auto;
+    margin: 1rem 0;
+    padding-left: 2rem;
     font-family: monospace;
     font-variant-ligatures: none;
     line-height: 1.3rem;
-}
-
-td {
-    vertical-align: top;
-    padding-bottom: 1rem;
 }

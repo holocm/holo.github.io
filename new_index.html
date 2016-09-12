@@ -14,7 +14,7 @@
             <a href="https://github.com/holocm" title="Fork on GitHub"><i class="fa fa-github"></i></a>
         </div>
         <h1>
-            <img src="img/holo-logo.svg" alt="Holo">
+            <img src="./img/holo-logo.svg" alt="Holo">
             Minimalistic configuration management
         </h1>
     </header>
@@ -66,75 +66,6 @@
             </p>
         </div>
     </section>
-    <!--
-    <section>
-        <h2>How does it work?</h2>
-        <p>Holo users ship configuration in packages, usually called &quot;holograms&quot;. These can be built with the regular package building tools (debuild, rpmbuild, makepkg, etc.) or with Holo's own <a href="https://github.com/holocm/holo-build">holo-build</a> tool that offers a much more pleasant syntax and process. Here's an example package declaration:</p>
-        <table>
-            <tr>
-                <td>
-                    In this example, we will be installing and starting an SSH server and configuring it to be a bit more secure than the default.
-                </td>
-                <td class="code">
-                    [package]<br>
-                    name&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;= &quot;hologram-openssh&quot;<br>
-                    version&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;= &quot;1.0.0&quot;<br>
-                    description = &quot;Start and configure OpenSSH&quot;<br>
-                    requires&nbsp;&nbsp;&nbsp;&nbsp;= ["openssh"]
-                </td>
-            </tr>
-            <tr>
-                <td>
-                    We may want to start SSH only after the firewall is set up, so we put a configuration file for systemd into the package.
-                </td>
-                <td class="code">
-                    [[file]]<br>
-                    path&nbsp;&nbsp;&nbsp;&nbsp;= &quot;/etc/systemd/system/sshd.service.d/hardened.conf&quot;<br>
-                    content = &quot;&quot;&quot;<br>
-                    &nbsp;&nbsp;[Unit]<br>
-                    &nbsp;&nbsp;After=firewall.service<br>
-                    &quot;&quot;&quot;
-                </td>
-            </tr>
-            <tr>
-                <td>
-                    We also want to disable password authentication. This one is a bit more tricky: We want to modify the configuration installed by the OpenSSH package, but the configuration is also a package, it may not install the same file path. Instead, we install a script that Holo will find and execute to update the default configuration.
-                </td>
-                <td class="code">
-                    [[file]]<br>
-                    path&nbsp;&nbsp;&nbsp;&nbsp;= &quot;/usr/share/holo/files/10-openssh/etc/ssh/sshd_config.holoscript&quot;<br>
-                    mode&nbsp;&nbsp;&nbsp;&nbsp;= &quot;0755&quot;<br>
-                    content = &quot;&quot;&quot;<br>
-                    &nbsp;&nbsp;#!/bin/sh<br>
-                    &nbsp;&nbsp;# stdin has the default config and<br>
-                    &nbsp;&nbsp;# stdout wants the updated config;<br>
-                    &nbsp;&nbsp;# we just add a line at the bottom<br>
-                    &nbsp;&nbsp;cat<br>
-                    &nbsp;&nbsp;echo &quot;PasswordAuthentication no&quot;<br>
-                    &quot;&quot;&quot;
-                </td>
-            </tr>
-            <tr>
-                <td>
-                    When everything is set up, we start the daemon.
-                </td>
-                <td class="code">
-                    [[action]]<br>
-                    on&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;= &quot;setup&quot;<br>
-                    script = &quot;&quot;&quot;<br>
-                    &nbsp;&nbsp;systemctl daemon-reload<br>
-                    &nbsp;&nbsp;systemctl enable sshd<br>
-                    &nbsp;&nbsp;systemctl restart sshd<br>
-                    &quot;&quot;&quot;
-                </td>
-            </tr>
-        </table>
-    </section>
-    <section>
-        <h2>But wait, there's more!</h2>
-        <p>With <strong>plugins</strong>, Holo can be taught to provision other things than files. For example, there are plugins for <a href="https://github.com/holocm/holo-users-groups">user accounts, groups</a> or <a href="https://github.com/holocm/holo-ssh-keys">SSH public keys</a>. You can easily write your own plugins; they can be as small as <a href="https://github.com/holocm/holo-run-scripts/tree/master/src/holo-run-scripts">one shell script</a>.
-    </section>
-    -->
 </body>
 </html>
 
@@ -145,8 +76,5 @@
         - holo-build (or debuild/rpmbuild/makepkg)
         - holo apply
         - holo diff
-    - section "Holo is *not* for..."
-        - platforms without an authoritative system package manager (Windows, macOS, Alpine?)
-    - section "Installation"
-    - links to Twitter, GitHub
+    - new_install.html
 -->
