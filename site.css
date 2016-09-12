@@ -12,103 +12,69 @@
   src: local('Montserrat-Bold'), url(font/montserrat-700.ttf) format('truetype');
 }
 
-html {
+html, body {
     margin: 0;
     padding: 0;
-    font-family: Montserrat, sans-serif;
-}
-
-body {
     background: white;
     color: black;
-    margin: 0;
-    padding: 0;
+    font-family: "Source Sans Pro","Noto Sans",sans-serif;
+    font-size: 16px; /* TODO: responsive? */
+    text-rendering: optimizeLegibility;
+    font-variant-ligatures: common-ligatures discretionary-ligatures;
+    font-kerning: normal;
 }
 
-.fixed-width {
-    max-width: 980px;
-    margin: 0 auto;
-    padding: 0 0.5rem;
+body * {
     box-sizing: border-box;
 }
 
-.clearfix {
-    clear: both;
-}
-.clearfix::after, .clearfix::before {
-    display: table;
+header:before, header:after, section:before, section:after {
     content: "";
+    display: table;
 }
 
-/*******************************************************************************
- * pitch (only on index.html)
- */
-
-#pitch {
-    font-size: 1.5rem;
-    background: black;
-    color: white;
-    text-align: center;
+section {
+    max-width: 60rem; /* = 960px for root-em = 16px */
+    margin: 0 auto;
+    padding: 0 1rem;
 }
 
-#pitch p {
-    margin-left: auto;
-    margin-right: auto;
-    max-width: 1000px;
-}
-
-#pitch-logo img {
-    width: 800px;
-    max-width: 80vw;
-}
-#pitch-text-1 {
-    font-size: 2rem;
-    margin: 0;
-}
-#pitch-text-2 {
-    font-size: 3rem;
-    margin-top: 0.5rem;
-}
-
-#pitch a.button {
-    display: inline-block;
-    border: 0;
-    border-radius: 5px;
-    padding: 0.5rem;
-    margin: 0.5rem;
-    background: #00C7FF;
-    color: black !important;
+section a, span.highlight {
+    /* the blue highlight needs to be a bit darker to look the same against a
+     * light background */
+    color: #00A7D0 !important;
+    font-weight: bold;
     text-decoration: none !important;
 }
-#pitch a.button:hover, #pitch a.button:active, #pitch a.button:focus {
-    background: white;
+
+section a:hover, section a:active, section a:focus {
+    text-decoration: underline !important;
 }
 
-/* on small screens, dial down the fontsizes a bit */
-@media (max-height: 40rem) and (max-width: 700px) {
-    #pitch        { font-size: 1rem }
-    #pitch-text-1 { font-size: 1.5rem }
-    #pitch-text-2 { font-size: 2rem }
+section h1 {
+    font-size: 1.7rem;
 }
 
-/*******************************************************************************
- * header (with logo and Twitter/Github links)
- */
+section h2 {
+    font-size: 1.5rem;
+}
 
-header#primary {
+/******************** rules for <header> ********************/
+
+header {
     background: black;
     color: #00C7FF;
-    height: 64px;
-    line-height: 64px;
-}
-
-header#primary .fixed-width {
-    padding: 0;
-    height: 0;
-    overflow: visible;
+    font-family: Montserrat, sans-serif;
+    text-align: center;
+    min-height: 48px; /* for div#header-buttons */
 }
 
 #header-buttons {
+    width: 60rem;
+    max-width: calc(100vw - 20px); /* leave some space for scrollbar */
+    height: 0;
+    overflow: visible;
+    margin: 0 auto;
     text-align: right;
 }
 
@@ -117,112 +83,146 @@ header#primary .fixed-width {
     color: inherit !important;
     text-decoration: none !important;
     margin-right: 0.5rem;
+    line-height: 48px;
 }
 
 #header-buttons a:hover, #header-buttons a:active, #header-buttons a:focus {
     color: white !important;
 }
 
-header#secondary {
-    background: #222;
-    color: #00C7FF;
-    height: 2.5rem;
-    line-height: 2.5rem;
-    padding: 0 0.5rem;
+div#small-logo {
+    height: 48px;
+    max-width: 60rem; /* like <section> */
+    margin: 0 auto;
 }
 
-header#secondary a {
-    color: inherit !important;
-    text-decoration: none !important;
-}
-
-header#secondary a:hover, header#secondary a:active, header#secondary a:focus {
-    color: white !important;
-}
-
-header#secondary a.current {
-    font-weight: bold;
-}
-
-/*******************************************************************************
- * content
- */
-
-#content-container a, span.highlight {
-    /* the blue highlight needs to be a bit darker to look the same against a
-     * light background */
-    color: #00A7D0 !important;
-    text-decoration: none !important;
-}
-
-#content-container a:hover, #content-container a:active, #content-container a:focus {
-    text-decoration: underline !important;
-}
-
-h1 {
-    font-size: 1.5rem;
-}
-
-h2 {
-    font-size: 1.2rem;
-}
-
-pre {
-    max-width: 100%;
-    overflow-x: auto;
-    padding-left: 2rem;
-}
-pre > code {
+div#small-logo img {
+    height: 100%;
     display: block;
 }
 
-pre, tt, code {
-    font-size: 1rem;
+/******************** index.html: first <section> with logo and tagline ********************/
+
+header h1 {
+    margin: 1rem 0.5rem 3rem 0.5rem;
+    font-size: 2rem;
+    font-weight: normal;
 }
 
-/* pod2html wraps the content of <li> in <p> for some reason */
-section li > p {
+h1 > img {
+    display: block;
+    margin: 0 auto 0.5rem auto;
+    width: 40rem;
+    max-width: 80vw;
+    max-height: 40vh;
+}
+
+@media(max-width:30rem) {
+    header h1 {
+        font-size: 1.5rem; /* use linear interpolation instead of fixed sizes */
+    }
+    header h1 > img {
+        margin-top: 3rem;
+    }
+}
+
+/******************** index.html: second <section> with top 3 features ********************/
+
+section.flex {
+    display: flex;
+    padding: 0;
+}
+
+section.flex > div {
+    flex: 1 1 100%;
+}
+
+section.features > div {
+    text-align: center;
+}
+
+section.features > div > h3 {
+    margin: 1rem;
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
+section.features > div > p {
+    margin: 1rem;
+    margin-top: 0.5rem;
+    font-size: 1.2rem;
+}
+
+h3 > img {
+    display: block;
+    margin: 0 auto 0.5rem auto;
+    width: 50%;
+}
+
+@media(max-width:30rem) {
+    section.flex {
+        display: block;
+    }
+    section.features > div {
+        position: relative;
+        text-align: left;
+        padding-left: 30vw;
+        min-height: 30vw;
+    }
+    h3 > img {
+        width: 30vw;
+        position: absolute;
+        top: 0;
+        left: 0;
+    }
+}
+
+/******************** index.html: third section describing the audience ********************/
+
+section.audience > div {
+    padding: 0 1rem;
+}
+
+section.audience ul {
+    list-style: none;
     margin: 0;
     padding: 0;
 }
 
-div.standout {
-    background: #EEE;
-    padding: 2rem 0;
+section.audience li {
+    margin: 1rem 0;
+    padding: 0;
+}
+
+p.buttons {
     text-align: center;
 }
 
-div.standout img {
-    width: 100%;
-    max-width: 700px;
-}
-
-/*******************************************************************************
- * footer
- */
-
-#content-container {
-    /* ensure that the footer is at the bottom, without being position:fixed */
-    min-height: calc(100vh - 64px - 2.5rem - 2.3rem);
-}
-
-footer {
-    text-align: center;
-    margin: 0;
-    padding: 0.5rem 0;
-    background: black;
-    color: white;
-}
-
-footer .fixed-width {
-    line-height: 1.3rem;
-}
-
-footer a {
-    color: #00C7FF !important;
+p.buttons a.button {
+    display: inline-block;
+    border: 2px solid black;
+    border-radius: 5px;
+    padding: 0.5rem;
+    margin-left: 0.5rem;
+    background: white;
+    font-family: Montserrat, sans-serif;
+    color: black !important;
     text-decoration: none !important;
 }
+p.buttons a.button:hover, p.buttons a.button:active, p.buttons a.button:focus {
+    border-color: #00A7D0;
+    background: #00A7D0;
+    color: white !important;
+}
 
-footer a:hover, footer a:active, footer a:focus {
-    text-decoration: underline !important;
+/******************** example.html: code snippets ********************/
+
+pre {
+    max-width: 100%;
+    overflow-x: auto;
+    margin: 1rem 0;
+    padding-left: 2rem;
+    font-family: monospace;
+    font-variant-ligatures: none;
+    line-height: 1.3rem;
 }
