@@ -34,18 +34,54 @@ header:before, header:after, section:before, section:after {
 }
 
 section {
-    max-width: 960px;
+    max-width: 60rem; /* = 960px for root-em = 16px */
     margin: 0 auto;
 }
 
-/******************** index.html: first <section> with logo and tagline ********************/
+section a, span.highlight {
+    /* the blue highlight needs to be a bit darker to look the same against a
+     * light background */
+    color: #00A7D0 !important;
+    font-weight: bold;
+    text-decoration: none !important;
+}
+
+section a:hover, section a:active, section a:focus {
+    text-decoration: underline !important;
+}
+
+/******************** rules for <header> ********************/
 
 header {
     background: black;
     color: #00C7FF;
     font-family: Montserrat, sans-serif;
     text-align: center;
+    min-height: 64px; /* for div#header-buttons */
 }
+
+#header-buttons {
+    width: 60rem;
+    max-width: calc(100vw - 20px); /* leave some space for scrollbar */
+    height: 0;
+    overflow: visible;
+    margin: 0 auto;
+    text-align: right;
+}
+
+#header-buttons a {
+    font-size: 40px;
+    color: inherit !important;
+    text-decoration: none !important;
+    margin-right: 0.5rem;
+}
+
+#header-buttons a:hover, #header-buttons a:active, #header-buttons a:focus {
+    color: white !important;
+}
+
+
+/******************** index.html: first <section> with logo and tagline ********************/
 
 h1 {
     margin: 1rem 0.5rem 3rem 0.5rem;
@@ -69,44 +105,103 @@ h1 > img {
 
 /******************** index.html: second <section> with top 3 features ********************/
 
-section.three-columns {
+section.flex {
     display: flex;
 }
 
-section.three-columns > div {
+section.flex > div {
     flex: 1 1 100%;
+}
+
+section.features > div {
     text-align: center;
 }
 
-section.three-columns > div > h2 {
+section.features > div > h3 {
     margin: 1rem;
+    font-size: 1.5rem;
+    font-weight: bold;
 }
 
-section.three-columns > div > p {
+section.features > div > p {
     margin: 1rem;
     margin-top: 0.5rem;
+    font-size: 1.2rem;
 }
 
-h2 > img {
+h3 > img {
     display: block;
     margin: 0 auto 0.5rem auto;
     width: 50%;
 }
 
 @media(max-width:30rem) {
-    section.three-columns {
+    section.flex {
         display: block;
     }
-    section.three-columns > div {
+    section.features > div {
         position: relative;
         text-align: left;
         padding-left: 30vw;
         min-height: 30vw;
     }
-    h2 > img {
+    h3 > img {
         width: 30vw;
         position: absolute;
         top: 0;
         left: 0;
     }
+}
+
+/******************** index.html: third section describing the audience ********************/
+
+section.audience > div {
+    padding: 0 1rem;
+}
+
+section.audience ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+section.audience li {
+    margin: 1rem 0;
+    padding: 0;
+}
+
+p.buttons {
+    text-align: center;
+}
+
+p.buttons a.button {
+    display: inline-block;
+    border: 2px solid black;
+    border-radius: 5px;
+    padding: 0.5rem;
+    margin-left: 0.5rem;
+    background: white;
+    font-family: Montserrat, sans-serif;
+    color: black !important;
+    text-decoration: none !important;
+}
+p.buttons a.button:hover, p.buttons a.button:active, p.buttons a.button:focus {
+    border-color: #00A7D0;
+    background: #00A7D0;
+    color: white !important;
+}
+
+/******************** index.html: third <section> with example pkg.toml ********************/
+
+td.code {
+    width: 40rem;
+    padding: 0 0.5rem 1rem 1rem;
+    font-family: monospace;
+    font-variant-ligatures: none;
+    line-height: 1.3rem;
+}
+
+td {
+    vertical-align: top;
+    padding-bottom: 1rem;
 }
