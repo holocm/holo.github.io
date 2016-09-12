@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Holo - Minimalistic Configuration Management</title>
+    <link rel="stylesheet" type="text/css" href="./new_site.css">
+    <link rel="stylesheet" type="text/css" href="./font/font-awesome.min.css">
+</head>
+<body>
+    <header>
+        <h1>
+            <img src="img/holo-logo.svg" alt="Holo">
+            Minimalistic configuration management
+        </h1>
+    </header>
+    <section class="three-columns">
+        <div>
+            <h2>
+                <img src="img/feature-declarative.svg" alt="">
+                Declarative
+            </h2>
+            <p>Document system configuration with a friendly DSL.</p>
+        </div>
+        <div>
+            <h2>
+                <img src="img/feature-integrated.svg" alt="">
+                Integrated
+            </h2>
+            <p>Holo uses the system package manager to maintain the system state.</p>
+        </div>
+        <div>
+            <h2>
+                <!-- TODO: feature-serverless.svg -->
+                <img src="img/feature-declarative.svg" alt="">
+                Serverless
+            </h2>
+            <p>No dedicated infrastructure or network access required.</p>
+        </div>
+    </section>
+</body>
+</html>
+
+<!--
+    TODO:
+    - extensive step-by-step example
+        - pkg.toml (plain file, holoscript and user/group)
+        - holo-build (or debuild/rpmbuild/makepkg)
+        - holo apply
+        - holo diff
+    - section "Holo is *not* for..."
+        - platforms without an authoritative system package manager (Windows, macOS, Alpine?)
+    - section "Installation"
+    - links to Twitter, GitHub
+-->

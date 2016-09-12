@@ -1,0 +1,112 @@
+@font-face {
+  font-family: 'Montserrat';
+  font-style: normal;
+  font-weight: 400;
+  src: local('Montserrat-Regular'), url(font/montserrat-400.ttf) format('truetype');
+}
+
+@font-face {
+  font-family: 'Montserrat';
+  font-style: normal;
+  font-weight: 700;
+  src: local('Montserrat-Bold'), url(font/montserrat-700.ttf) format('truetype');
+}
+
+html, body {
+    margin: 0;
+    padding: 0;
+    background: white;
+    color: black;
+    font-family: "Source Sans Pro", sans-serif;
+    font-size: 16px; /* TODO: responsive? */
+    text-rendering: optimizeLegibility;
+    font-variant-ligatures: common-ligatures discretionary-ligatures;
+    font-kerning: normal;
+}
+
+body * {
+    box-sizing: border-box;
+}
+
+header:before, header:after, section:before, section:after {
+    content: "";
+    display: table;
+}
+
+section {
+    max-width: 960px;
+    margin: 0 auto;
+}
+
+/******************** index.html: first <section> with logo and tagline ********************/
+
+header {
+    background: black;
+    color: #00C7FF;
+    font-family: Montserrat, sans-serif;
+    text-align: center;
+}
+
+h1 {
+    margin: 1rem 0.5rem 3rem 0.5rem;
+    font-size: 2rem;
+    font-weight: normal;
+}
+
+h1 > img {
+    display: block;
+    margin: 0 auto 0.5rem auto;
+    width: 40rem;
+    max-width: 80vw;
+    max-height: 40vh;
+}
+
+@media(max-width:30rem) {
+    h1 {
+        font-size: 1.5rem; /* use linear interpolation instead of fixed sizes */
+    }
+}
+
+/******************** index.html: second <section> with top 3 features ********************/
+
+section.three-columns {
+    display: flex;
+}
+
+section.three-columns > div {
+    flex: 1 1 100%;
+    text-align: center;
+}
+
+section.three-columns > div > h2 {
+    margin: 1rem;
+}
+
+section.three-columns > div > p {
+    margin: 1rem;
+    margin-top: 0.5rem;
+}
+
+h2 > img {
+    display: block;
+    margin: 0 auto 0.5rem auto;
+    width: 50%;
+}
+
+@media(max-width:30rem) {
+    section.three-columns {
+        display: block;
+    }
+    section.three-columns > div {
+        position: relative;
+        text-align: left;
+        padding-left: 30vw;
+        min-height: 30vw;
+    }
+    h2 > img {
+        width: 30vw;
+        position: absolute;
+        top: 0;
+        left: 0;
+    }
+}
