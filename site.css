@@ -104,7 +104,7 @@ div#small-logo img {
 /******************** index.html: first <section> with logo and tagline ********************/
 
 header h1 {
-    margin: 1rem 0.5rem 3rem 0.5rem;
+    margin: 48px 0.5rem 3rem 0.5rem;
     font-size: 2rem;
     font-weight: normal;
 }
