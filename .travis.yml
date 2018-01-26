@@ -1,0 +1,56 @@
+language: generic
+
+env:
+  - PANDOC_VERSION=2.0.6 # current in Arch, much newer than the apt repo's 1.12.2
+install:
+  - cd ~
+  - rm -f pandoc-${PANDOC_VERSION}-1-amd64.deb
+  - wget https://github.com/jgm/pandoc/releases/download/${PANDOC_VERSION}/pandoc-${PANDOC_VERSION}-1-amd64.deb
+  - sudo dpkg -i pandoc-${PANDOC_VERSION}-1-amd64.deb
+  - sudo apt-get install -f
+  - rm -f pandoc-${PANDOC_VERSION}-1-amd64.deb
+  - cd -
+
+script:
+  - make
+
+# This uses SSH keys to securely push the result back to GitHub from
+# Travis-CI.  You'll need to generate the key, and add it to both
+# Travis-CI and GitHub.
+#
+# Generate the key:
+#
+#       $ ssh-keygen -f deploy-key  # it will prompt you; do not enter a password
+#
+# Give the private key to Travis-CI
+#
+#   Properly escape the key for Bash, and copy it to the X11 primary
+#   clipboard:
+#
+#       $ DEPLOY_PRIVKEY=$(cat deploy-key)
+#       $ printf '%q' "$DEPLOY_PRIVKEY" | xclip
+#
+#   Now go to https://travis-ci.org/holocm/holocm.github.io/settings
+#   and (middle-click) paste the key in to an environment variable
+#   named "DEPLOY_PRIVKEY".  Make sure that the "Display value in
+#   build log" toggle is "off".
+#
+# Give the public key to GitHub
+#
+#       $ xclip < deploy-key.pub
+#
+#   Now go to https://github.com/holocm/holocm.github.io/settings/keys/new
+#   and (middle-click) paste the key in to a new deploy key.  Make
+#   sure the "Allow write access" checkbox is checked.  You may use
+#   any title you like.
+git:
+  depth: false # --depth implies --single-branch, which we don't want
+before_deploy:
+  - git remote set-url --push origin $(git remote get-url origin | sed 's,^https://,ssh://git@,')
+  - eval "$(ssh-agent -s)" && ssh-add - <<<"$DEPLOY_PRIVKEY"
+deploy:
+  on:
+    branch: master
+  skip-cleanup: true
+  provider: script
+  script: make deploy
