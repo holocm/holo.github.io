@@ -77,4 +77,18 @@ signing key:
 To give feedback about these packages, please [use GitHub
 Issues](https://github.com/majewsky/holo-foreign-repo/issues/new).
 
+Parabola packages
+-------------------
+
+Parabola includes a `holo` package in its [PCR] repository, which is
+enabled by default:
+
+    $ sudo pacman -S holo
+
+To give feedback on this package, use [Parabola's bug
+tracker](https://labs.parabola.nu/projects/issue-tracker/issues).
+
+However, Parabola does not include `holo-build`; follow the the Arch
+Linux section if you would like to install it.
+
 </section>
