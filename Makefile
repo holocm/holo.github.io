@@ -2,13 +2,7 @@ all: $(patsubst %.md,%.html,$(filter-out README.md,$(wildcard *.md)))
 .PHONY: all
 
 %.html: %.md holo.html5.template Makefile
-	 < $< pandoc -f markdown -t html5 --standalone --template=holo.html5.template \
-	| sed -r -e 's,<pre><code>,<pre>,g' \
-	         -e 's,</code></pre>,</pre>,g' \
-	         -e 's/<(h.) id="[^"]*">/<\1>/g' \
-	         -e 's,<(/?)code>,<\1tt>,g' \
-	         -e 's,</a> <a,</a>\n<a,g' \
-	 > $@
+	 < $< pandoc -f markdown -t html5 --standalone --template=holo.html5.template > $@
 
 clean:
 	rm -f -- *.html
