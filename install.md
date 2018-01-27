@@ -27,11 +27,7 @@ From source
 Alternatively, install from source by cloning the corresponding Git
 repos and looking at the `README.md`:
 
--   the core execuable: [holo](https://github.com/holocm/holo)
--   optional plugins for Holo:
-    [holo-users-groups](https://github.com/holocm/holo-users-groups),
-    [holo-ssh-keys](https://github.com/holocm/holo-ssh-keys) and
-    [holo-run-scripts](https://github.com/holocm/holo-run-scripts)
+-   the core execuable and core plugins: [holo](https://github.com/holocm/holo)
 -   the package building tool:
     [holo-build](https://github.com/holocm/holo-build)
 
