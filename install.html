@@ -22,8 +22,7 @@
         <h2>From source</h2>
         <p>Alternatively, install from source by cloning the corresponding Git repos and looking at the <tt>README.md</tt>:</p>
         <ul>
-            <li>the core execuable: <a href="https://github.com/holocm/holo">holo</a></li>
-            <li>optional plugins for Holo: <a href="https://github.com/holocm/holo-users-groups">holo-users-groups</a>, <a href="https://github.com/holocm/holo-ssh-keys">holo-ssh-keys</a> and <a href="https://github.com/holocm/holo-run-scripts">holo-run-scripts</a></li>
+            <li>the core executable: <a href="https://github.com/holocm/holo">holo</a> (including the default set of plugins)</li>
             <li>the package building tool: <a href="https://github.com/holocm/holo-build">holo-build</a></li>
         </ul>
         <h2>Arch Linux packages</h2>
@@ -48,6 +47,11 @@ $ sudo apt-key adv --fingerprint 0xD6019A3E17CA2D96
 #     check the key fingerprint before continuing, it should be:
 #     BB41 E373 DB03 9091 6D23  2BFF D601 9A3E 17CA 2D96</pre>
         <p>To give feedback about these packages, please <a href="https://github.com/majewsky/holo-foreign-repo/issues/new">use GitHub Issues</a>.</p>
+        <h2>Parabola packages</h2>
+        <p>Parabola includes a Holo package in its [PCR] repository, which is enabled by default:</p>
+        <pre>$ sudo pacman -S holo</pre>
+        <p>To give feedback on this package, use <a href="https://labs.parabola.nu/projects/issue-tracker/issues">Parabola's bug tracker</a>.</p>
+        <p>However, Parabola does not include holo-build. Follow the Arch Linux section above to install it.</p>
     </section>
 </body>
 </html>
