@@ -29,13 +29,14 @@
         <p>Packages are available from the <a href="https://aur.archlinux.org/packages/?K=holo&SeB=n">AUR</a>. If you prefer pre-compiled packages, you can use our repository (only available for x86_64 at the moment). Add the following to your <tt>/etc/pacman.conf</tt>:
         <pre>[holo]
 Server = https://repo.holocm.org/archlinux/$arch</pre>
-        <p>The packages are signed with GPG, so you need to import and trust the signing key:</p>
-        <pre>$ sudo pacman-key -r 0xF7A9C9DC4631BD1A
-$ sudo pacman-key -f 0xF7A9C9DC4631BD1A
-#     check the key fingerprint before continuing, it should be:
-#     2A53 49F6 B4D7 305A 85DE  D8D4 F7A9 C9DC 4631 BD1A
-$ sudo pacman-key --lsign-key 0xF7A9C9DC4631BD1A</pre>
-        <p>To get a list of all packages in this repo, use:</p>
+        <p>The packages are signed with GPG, so you need to import and trust the signing key. The repo contains a keyring package that you can use for this, but make sure to validate the checksum before installing it.</p>
+        <pre>$ wget https://repo.holocm.org/archlinux/x86_64/holo-keyring-20201009.1-1-any.pkg.tar.xz
+...
+$ sha256sum &lt; holo-keyring-20201009.1-1-any.pkg.tar.xz
+<strong>dec378054732fad0109eeff5da3933cefb70eaeb14217f20a33510f3772aea95</strong>  -
+$ sudo pacman -U holo-keyring-20201009.1-1-any.pkg.tar.xz
+...</pre>
+        <p>To get a list of all packages in the repo, use:</p>
         <pre>$ sudo pacman -Syl holo</pre>
         <p>To give feedback about these packages, please <a href="https://github.com/majewsky/holo-pacman-repo/issues/new">use GitHub Issues</a>.</p>
         <h2>Debian/Ubuntu packages</h2>
