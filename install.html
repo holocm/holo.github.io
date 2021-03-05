@@ -3,8 +3,8 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Holo - Installation</title>
-    <link rel="stylesheet" type="text/css" href="./site.css">
+    <title>Installation - Holo</title>
+    <link rel="stylesheet" type="text/css" href="/site.css">
 </head>
 <body>
     <header>
@@ -13,46 +13,54 @@
             <a href="https://github.com/holocm" title="Fork on GitHub"><span class="logo logo-github"></span></a>
         </div>
         <div id="small-logo">
-            <a href="./index.html"><img src="img/holo-logo.svg"></a>
+            <a href="/index.html"><img src="img/holo-logo.svg"></a>
         </div>
     </header>
-    <section>
-        <h1>How to install Holo</h1>
-        <p>Whenever possible, install Holo as a package. Package sources are listed below by distribution. (If you are a packager, please <a href="https://github.com/holocm/holo/issues/new">contact us</a> if you're working on getting Holo packaged in your distribution.)</p>
-        <h2>From source</h2>
-        <p>Alternatively, install from source by cloning the corresponding Git repos and looking at the <tt>README.md</tt>:</p>
-        <ul>
-            <li>the core executable: <a href="https://github.com/holocm/holo">holo</a> (including the default set of plugins)</li>
-            <li>the package building tool: <a href="https://github.com/holocm/holo-build">holo-build</a></li>
-        </ul>
-        <h2>Arch Linux packages</h2>
-        <p>Packages are available from the <a href="https://aur.archlinux.org/packages/?K=holo&SeB=n">AUR</a>. If you prefer pre-compiled packages, you can use our repository (only available for x86_64 at the moment). Add the following to your <tt>/etc/pacman.conf</tt>:
-        <pre>[holo]
-Server = https://repo.holocm.org/archlinux/$arch</pre>
-        <p>The packages are signed with GPG, so you need to import and trust the signing key. The repo contains a keyring package that you can use for this, but make sure to validate the checksum before installing it.</p>
-        <pre>$ wget https://repo.holocm.org/archlinux/x86_64/holo-keyring-20201009.1-1-any.pkg.tar.xz
+    <section><h1>How to install Holo</h1>
+<p>Whenever possible, install Holo as a package. Package sources are listed below by distribution. (If you are a packager,
+please <a href="https://github.com/holocm/holo/issues/new">contact us</a> if you're working on getting Holo packaged in your
+distribution.)</p>
+<h2>From source</h2>
+<p>Alternatively, install from source by cloning the corresponding Git repos and looking at the <code>README.md</code>:</p>
+<ul>
+<li>the core executable: <a href="https://github.com/holocm/holo">holo</a> (including the default set of plugins)</li>
+<li>the package building tool: <a href="https://github.com/holocm/holo-build">holo-build</a></li>
+</ul>
+<h2>Arch Linux packages</h2>
+<p>Packages are available from the <a href="https://aur.archlinux.org/packages/?K=holo&amp;SeB=n">AUR</a>. If you prefer pre-compiled
+packages, you can use our repository (only available for x86_64 at the moment). Add the following to your
+<code>/etc/pacman.conf</code>:</p>
+<pre><code>[holo]
+Server = https://repo.holocm.org/archlinux/$arch
+</code></pre>
+<p>The packages are signed with GPG, so you need to import and trust the signing key. The repo contains a keyring package
+that you can use for this, but make sure to validate the checksum before installing it.</p>
+<pre><code>$ wget https://repo.holocm.org/archlinux/x86_64/holo-keyring-20201009.1-1-any.pkg.tar.xz
 ...
 $ sha256sum &lt; holo-keyring-20201009.1-1-any.pkg.tar.xz
-<strong>dec378054732fad0109eeff5da3933cefb70eaeb14217f20a33510f3772aea95</strong>  -
+dec378054732fad0109eeff5da3933cefb70eaeb14217f20a33510f3772aea95  -
 $ sudo pacman -U holo-keyring-20201009.1-1-any.pkg.tar.xz
-...</pre>
-        <p>To get a list of all packages in the repo, use:</p>
-        <pre>$ sudo pacman -Syl holo</pre>
-        <p>To give feedback about these packages, please <a href="https://github.com/majewsky/holo-pacman-repo/issues/new">use GitHub Issues</a>.</p>
-        <h2>Debian/Ubuntu packages</h2>
-        <p>We offer packages that have been cross-compiled on Arch Linux. Add the following to your <tt>/etc/apt/sources.list</tt>:</p>
-        <pre>deb [arch=amd64] https://repo.holocm.org/debian stable main</pre>
-        <p>The repository is signed with GPG, so you need to import and trust the signing key:</p>
-        <pre>$ sudo apt-key adv --keyserver pool.sks-keyservers.net --recv-keys 0xD6019A3E17CA2D96
+...
+</code></pre>
+<p>To get a list of all packages in the repo, use:</p>
+<pre><code>$ sudo pacman -Syl holo
+</code></pre>
+<p>To give feedback about these packages, please <a href="https://github.com/majewsky/holo-pacman-repo/issues/new">use GitHub Issues</a>.</p>
+<h2>Debian/Ubuntu packages</h2>
+<p>We offer packages that have been cross-compiled on Arch Linux. Add the following to your <code>/etc/apt/sources.list</code>:</p>
+<pre><code>deb [arch=amd64] https://repo.holocm.org/debian stable main
+</code></pre>
+<p>The repository is signed with GPG, so you need to import and trust the signing key:</p>
+<pre><code>$ sudo apt-key adv --keyserver pool.sks-keyservers.net --recv-keys 0xD6019A3E17CA2D96
 $ sudo apt-key adv --fingerprint 0xD6019A3E17CA2D96
 #     check the key fingerprint before continuing, it should be:
-#     BB41 E373 DB03 9091 6D23  2BFF D601 9A3E 17CA 2D96</pre>
-        <p>To give feedback about these packages, please <a href="https://github.com/majewsky/holo-foreign-repo/issues/new">use GitHub Issues</a>.</p>
-        <h2>Parabola packages</h2>
-        <p>Parabola includes a Holo package in its [PCR] repository, which is enabled by default:</p>
-        <pre>$ sudo pacman -S holo</pre>
-        <p>To give feedback on this package, use <a href="https://labs.parabola.nu/projects/issue-tracker/issues">Parabola's bug tracker</a>.</p>
-        <p>However, Parabola does not include holo-build. Follow the Arch Linux section above to install it.</p>
-    </section>
+#     BB41 E373 DB03 9091 6D23  2BFF D601 9A3E 17CA 2D96
+</code></pre>
+<p>To give feedback about these packages, please <a href="https://github.com/majewsky/holo-foreign-repo/issues/new">use GitHub Issues</a>.</p>
+<h2>Parabola packages</h2>
+<p>Parabola includes a Holo package in its [PCR] repository, which is enabled by default:</p>
+<pre><code>$ sudo pacman -S holo
+</code></pre>
+<p>To give feedback on this package, use <a href="https://labs.parabola.nu/projects/issue-tracker/issues">Parabola's bug tracker</a>.</p>
+<p>However, Parabola does not include holo-build. Follow the Arch Linux section above to install it.</section>
 </body>
-</html>

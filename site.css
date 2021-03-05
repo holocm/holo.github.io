@@ -18,7 +18,7 @@ html, body {
     background: white;
     color: black;
     font-family: "Source Sans Pro","Noto Sans",sans-serif;
-    font-size: 16px; /* TODO: responsive? */
+    font-size: 16px;
     text-rendering: optimizeLegibility;
     font-variant-ligatures: common-ligatures;
     font-kerning: normal;
@@ -225,6 +225,21 @@ pre {
     font-family: monospace;
     font-variant-ligatures: none;
     line-height: 1.3rem;
+}
+
+section > p, section > li {
+    line-height: 1.5rem;
+}
+
+section > p > code, section > li > code {
+    border: 1px solid #666;
+    border-radius: 5px;
+    background: #F0F0F0;
+    padding: 0.1rem 0.3rem;
+    font-family: monospace;
+    font-variant-ligatures: none;
+    white-space: nowrap;
+    line-height: calc(1.3rem - 2px); /* 1.3rem as above, minus vertical padding and border */
 }
 
 /******************** icons extracted from Font Awesome ********************

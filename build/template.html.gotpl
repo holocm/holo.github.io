@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{.Title}}</title>
+    <link rel="stylesheet" type="text/css" href="/site.css">
+</head>
+<body>
+    <header>
+        <div id="header-buttons">
+            <a href="https://twitter.com/holocm" title="Follow on Twitter"><span class="logo logo-twitter"></span></a>
+            <a href="https://github.com/holocm" title="Fork on GitHub"><span class="logo logo-github"></span></a>
+        </div>
+        <div id="small-logo">
+            <a href="/index.html"><img src="img/holo-logo.svg"></a>
+        </div>
+    </header>
+    <section>{{.Content}}</section>
+</body>
