@@ -101,6 +101,44 @@ div#small-logo img {
     display: block;
 }
 
+/******************** rules for <nav> ********************/
+
+nav {
+    background: #666;
+    color: white;
+    font-family: Montserrat, sans-serif;
+    text-align: center;
+    min-height: 2rem;
+}
+
+nav > ul {
+    width: 60rem;
+    max-width: calc(100vw - 20px); /* leave some space for scrollbar */
+    margin: 0 auto;
+    padding: 0 0 0 1rem;
+    text-align: left;
+}
+
+nav > ul > li {
+    display: inline;
+    margin: 0;
+    padding: 0;
+    line-height: 2rem;
+}
+
+nav > ul > li + li:before {
+    display: inline;
+    content: "– ";
+}
+
+nav > ul > li > a {
+    color: inherit !important;
+}
+
+nav > ul > li > a.self-link, nav > ul > li > a:active, nav > ul > li > a:focus, nav > ul > li > a:hover {
+    font-weight: bold;
+}
+
 /******************** index.html: first <section> with logo and tagline ********************/
 
 header h1 {
@@ -215,7 +253,7 @@ p.buttons a.button:hover, p.buttons a.button:active, p.buttons a.button:focus {
     color: white !important;
 }
 
-/******************** example.html: code snippets ********************/
+/******************** rules for generated pages (example.html, install.html, etc.) ********************/
 
 pre {
     max-width: 100%;

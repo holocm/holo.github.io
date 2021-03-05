@@ -16,5 +16,11 @@
             <a href="/index.html"><img src="img/holo-logo.svg"></a>
         </div>
     </header>
+    <nav>
+        <ul>
+            <li><a href="/example.html" class="{{if eq .OutPath "example.html"}}self-link{{end}}">Example</a></li>
+            <li><a href="/install.html" class="{{if eq .OutPath "install.html"}}self-link{{end}}">Installation</a></li>
+        </ul>
+    </nav>
     <section>{{.Content}}</section>
 </body>
