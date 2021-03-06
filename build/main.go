@@ -27,12 +27,15 @@ import (
 	"math"
 	"os"
 	"path/filepath"
+	"regexp"
 	"sort"
 	"strings"
 	"unicode"
 
 	"github.com/golang-commonmark/markdown"
 )
+
+var allManpages = findManpages()
 
 func main() {
 	//load page template
@@ -49,7 +52,6 @@ func main() {
 	}
 
 	//render HTML from manpages
-	allManpages := findManpages()
 	for _, manpage := range allManpages {
 		page := loadPageFromManpageJSON(manpage)
 		page.AllManpages = allManpages
@@ -204,23 +206,19 @@ func (n docNode) ToHTML() string {
 		return fmt.Sprintf(`<h2>%s</h2>`, n.ChildrenToHTML())
 	case "Para":
 		return fmt.Sprintf(`<p>%s</p>`, n.ChildrenToHTML())
+	case "Verbatim":
+		return fmt.Sprintf(`<pre><code>%s</code></pre>`, removeRedundantIndentation(n.ChildrenToHTML()))
 	case "B":
 		return fmt.Sprintf(`<strong>%s</strong>`, n.ChildrenToHTML())
 	case "I":
 		return fmt.Sprintf(`<em>%s</em>`, n.ChildrenToHTML())
 	case "C", "F":
 		return fmt.Sprintf(`<code>%s</code>`, n.ChildrenToHTML())
-	case "Verbatim":
-		return fmt.Sprintf(`<pre><code>%s</code></pre>`, removeRedundantIndentation(n.ChildrenToHTML()))
+	case "L":
+		href := template.HTMLEscapeString(linkAttrsToHref(n.Attrs))
+		return fmt.Sprintf(`<a href=%q>%s</a>`, href, n.ChildrenToHTML())
 	case "__TEXT__":
 		return template.HTMLEscapeString(n.Attrs["text"])
-	case "L":
-		switch n.Attrs["type"] {
-		case "url":
-			href := template.HTMLEscapeString(n.Attrs["to"])
-			return fmt.Sprintf(`<a href=%q>%s</a>`, href, n.ChildrenToHTML())
-		}
-		fallthrough
 	default:
 		//unknown node type -> dump contents as red text to make it stand out
 		contents := struct {
@@ -231,6 +229,33 @@ func (n docNode) ToHTML() string {
 		contentsJSON, _ := json.Marshal(contents)
 		return fmt.Sprintf(`<span style="color:red">UNKNOWN %s</span>`, string(contentsJSON))
 	}
+}
+
+var manpageLinkRx = regexp.MustCompile(`^(.*)\((.*)\)$`)
+
+//Converts attributes of a POD node of type "L" into a href attribute for <a>.
+func linkAttrsToHref(attrs map[string]string) string {
+	if attrs["type"] == "url" {
+		return attrs["to"]
+	}
+
+	if attrs["type"] == "man" {
+		match := manpageLinkRx.FindStringSubmatch(attrs["to"])
+		if match != nil {
+			title := match[1]
+			section := match[2]
+			//if this is one of our manpages, link inside this site
+			for _, manpage := range allManpages {
+				if manpage.Title == title && manpage.Section == section {
+					return "/" + manpage.OutPath
+				}
+			}
+			//if it's a foreign manpage, link to an outside manpage hoster
+			return fmt.Sprintf("https://www.man7.org/linux/man-pages/man%s/%s.%[1]s.html", section, title)
+		}
+	}
+
+	panic(fmt.Sprintf("cannot convert link attributes into href: %#v", attrs))
 }
 
 //Takes a codeblock and removes leading spaces that are shared by all nonempty lines.
