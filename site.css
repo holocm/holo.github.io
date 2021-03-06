@@ -271,11 +271,11 @@ pre {
     line-height: 1.3rem;
 }
 
-section > p, section > li {
+section p, section li, section dt {
     line-height: 1.5rem;
 }
 
-section > p > code, section > li > code {
+section p > code, section li > code, section dt > code {
     border: 1px solid #666;
     border-radius: 5px;
     background: #F0F0F0;
@@ -284,6 +284,16 @@ section > p > code, section > li > code {
     font-variant-ligatures: none;
     white-space: nowrap;
     line-height: calc(1.3rem - 2px); /* 1.3rem as above, minus vertical padding and border */
+}
+
+section dt {
+    margin: 1rem 0;
+}
+
+section dt:before {
+    content: "⮞ ";
+    display: inline;
+    color: #00A7D0;
 }
 
 /******************** icons extracted from Font Awesome ********************

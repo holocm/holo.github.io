@@ -208,6 +208,8 @@ func (n docNode) ToHTML() string {
 		return fmt.Sprintf(`<p>%s</p>`, n.ChildrenToHTML())
 	case "Verbatim":
 		return fmt.Sprintf(`<pre><code>%s</code></pre>`, removeRedundantIndentation(n.ChildrenToHTML()))
+	case "over-text":
+		return renderDescriptionList(n.Children)
 	case "B":
 		return fmt.Sprintf(`<strong>%s</strong>`, n.ChildrenToHTML())
 	case "I":
@@ -229,6 +231,36 @@ func (n docNode) ToHTML() string {
 		contentsJSON, _ := json.Marshal(contents)
 		return fmt.Sprintf(`<span style="color:red">UNKNOWN %s</span>`, string(contentsJSON))
 	}
+}
+
+//Renders the contents of a POD node of type "over-text" into the innerHTML of
+//a <dl>. Each "item-text" item becomes a <dt>, and all other contents are
+//pooled into <dd becomes a <dt>, and all other contents are pooled into <dd>.
+func renderDescriptionList(children []docNode) string {
+	var ddContents []string
+	ddFinalize := func() string {
+		if len(ddContents) == 0 {
+			return ""
+		}
+		result := strings.Join(ddContents, "")
+		ddContents = nil
+		return fmt.Sprintf(`<dd>%s</dd>`, result)
+	}
+
+	var result []string
+	for _, child := range children {
+		if child.Type == "item-text" {
+			result = append(result,
+				ddFinalize(),
+				fmt.Sprintf(`<dt>%s</dt>`, child.ChildrenToHTML()),
+			)
+		} else {
+			ddContents = append(ddContents, child.ToHTML())
+		}
+	}
+
+	result = append(result, ddFinalize())
+	return fmt.Sprintf(`<dl>%s</dl>`, strings.Join(result, ""))
 }
 
 var manpageLinkRx = regexp.MustCompile(`^(.*)\((.*)\)$`)
