@@ -42,25 +42,6 @@ $ sudo pacman -Syl holo
 
 To give feedback about these packages, please [use GitHub Issues](https://github.com/majewsky/holo-pacman-repo/issues/new).
 
-## Debian/Ubuntu packages
-
-We offer packages that have been cross-compiled on Arch Linux. Add the following to your `/etc/apt/sources.list`:
-
-```
-deb [arch=amd64] https://repo.holocm.org/debian stable main
-```
-
-The repository is signed with GPG, so you need to import and trust the signing key:
-
-```
-$ sudo apt-key adv --keyserver pool.sks-keyservers.net --recv-keys 0xD6019A3E17CA2D96
-$ sudo apt-key adv --fingerprint 0xD6019A3E17CA2D96
-#     check the key fingerprint before continuing, it should be:
-#     BB41 E373 DB03 9091 6D23  2BFF D601 9A3E 17CA 2D96
-```
-
-To give feedback about these packages, please [use GitHub Issues](https://github.com/majewsky/holo-foreign-repo/issues/new).
-
 ## Parabola packages
 
 Parabola includes a Holo package in its \[PCR\] repository, which is enabled by default:

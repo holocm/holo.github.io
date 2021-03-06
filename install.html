@@ -53,17 +53,6 @@ $ sudo pacman -U holo-keyring-20201009.1-1-any.pkg.tar.xz
 <pre><code>$ sudo pacman -Syl holo
 </code></pre>
 <p>To give feedback about these packages, please <a href="https://github.com/majewsky/holo-pacman-repo/issues/new">use GitHub Issues</a>.</p>
-<h2>Debian/Ubuntu packages</h2>
-<p>We offer packages that have been cross-compiled on Arch Linux. Add the following to your <code>/etc/apt/sources.list</code>:</p>
-<pre><code>deb [arch=amd64] https://repo.holocm.org/debian stable main
-</code></pre>
-<p>The repository is signed with GPG, so you need to import and trust the signing key:</p>
-<pre><code>$ sudo apt-key adv --keyserver pool.sks-keyservers.net --recv-keys 0xD6019A3E17CA2D96
-$ sudo apt-key adv --fingerprint 0xD6019A3E17CA2D96
-#     check the key fingerprint before continuing, it should be:
-#     BB41 E373 DB03 9091 6D23  2BFF D601 9A3E 17CA 2D96
-</code></pre>
-<p>To give feedback about these packages, please <a href="https://github.com/majewsky/holo-foreign-repo/issues/new">use GitHub Issues</a>.</p>
 <h2>Parabola packages</h2>
 <p>Parabola includes a Holo package in its [PCR] repository, which is enabled by default:</p>
 <pre><code>$ sudo pacman -S holo
