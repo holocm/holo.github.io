@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>holorc(5)</title>
+    <link rel="stylesheet" type="text/css" href="/site.css">
+</head>
+<body>
+    <header>
+        <div id="header-buttons">
+            <a href="https://twitter.com/holocm" title="Follow on Twitter"><span class="logo logo-twitter"></span></a>
+            <a href="https://github.com/holocm" title="Fork on GitHub"><span class="logo logo-github"></span></a>
+        </div>
+        <div id="small-logo">
+            <a href="/index.html"><img src="/img/holo-logo.svg"></a>
+        </div>
+    </header>
+    <nav>
+        <ul>
+            <li><a href="/example.html" class="">Example</a></li>
+            <li><a href="/install.html" class="">Installation</a></li>
+        </ul>
+    </nav>
+    <section><h1>NAME</h1><p>holorc, holorc.d - configuration file for <span style="color:red">Unknown node type L</span></p><h1>SYNOPSIS</h1><pre><code>    /etc/holorc
+
+    /etc/holorc.d/*</code></pre><h1>DESCRIPTION</h1><p>The holorc file defines which plugins will be loaded and used by Holo, and in which order. Blank lines, and comment lines starting with a <code>#</code> character are ignored.</p><p>Non-blank and non-comment lines can be of one of two forms:</p><pre><code>    plugin $PLUGIN_ID
+    plugin $PLUGIN_ID=$PLUGIN_BINARY</code></pre><p>where <code>$PLUGIN_ID</code> is the alphanumeric identifier of the plugin, and <code>$PLUGIN_BINARY</code> is the path to the plugin executable file. If the form without an explicit <code>$PLUGIN_BINARY</code> is given, then Holo will use a default value of</p><pre><code>    PLUGIN_BINARY=/usr/lib/holo/holo-$PLUGIN_ID</code></pre><p>The plugin identifier is encoded in several paths that are relevant for the plugin:</p><span style="color:red">Unknown node type over-text</span><p>The holorc file can also be provided as snippets in <code>/etc/holorc.d/*</code>. Snippets will be parsed in alphabetical order, before the actual <code>/etc/holorc</code> is parsed.</p><h1>BEST PRACTICES</h1><p>Plugins are encouraged to add themselves to <code>/etc/holorc</code> at install time by installing a holorc snippet. For example:</p><pre><code>    $ cat /etc/holorc.d/20-users-groups
+    # This file is part of the holo-users-groups package.
+    plugin users-groups</code></pre><h1>SEE ALSO</h1><p><span style="color:red">Unknown node type L</span>, <span style="color:red">Unknown node type L</span></p><h1>AUTHOR</h1><p>Stefan Majewsky</p><p>Further documentation is available at the project homepage: https://holocm.org</p><p>Please report any issues and feature requests at GitHub: https://github.com/holocm/holo/issues</p></section>
+</body>

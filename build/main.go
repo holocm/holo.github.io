@@ -19,6 +19,8 @@
 package main
 
 import (
+	"encoding/json"
+	"fmt"
 	"html/template"
 	"io/ioutil"
 	"log"
@@ -36,11 +38,18 @@ func main() {
 	tmpl, err := template.New("build/template.html.gotpl").Parse(string(tmplBytes))
 	must(err)
 
-	//render pages from Markdown
+	//render HTML from Markdown
 	paths, err := filepath.Glob("build/pages/*.md")
 	must(err)
 	for _, path := range paths {
 		loadPageFromMarkdown(path).Render(tmpl)
+	}
+
+	//render HTML from manpages
+	paths, err = filepath.Glob("build/man/*.json")
+	must(err)
+	for _, path := range paths {
+		loadPageFromManpageJSON(path).Render(tmpl)
 	}
 }
 
@@ -99,5 +108,83 @@ func loadPageFromMarkdown(path string) page {
 		OutPath: baseName + ".html",
 		Title:   title,
 		Content: template.HTML(out),
+	}
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// pages from manpage (Perl POD -> JSON AST -> HTML)
+
+func loadPageFromManpageJSON(path string) page {
+	jsonBytes, err := ioutil.ReadFile(path)
+	must(err)
+	var doc docNode
+	must(json.Unmarshal(jsonBytes, &doc))
+
+	baseName := strings.TrimSuffix(filepath.Base(path), ".json")
+	baseNameFields := strings.Split(baseName, ".")
+	return page{
+		OutPath: fmt.Sprintf("man/%s.html", baseName),
+		Title:   fmt.Sprintf("%s(%s)", baseNameFields[0], baseNameFields[1]),
+		Content: template.HTML(doc.ToHTML()),
+	}
+}
+
+type docNode struct {
+	Type     string            `json:"name"`
+	Attrs    map[string]string `json:"attrs"`
+	Children []docNode         `json:"children"`
+}
+
+//UnmarshalJSON implements the json.Unmarshaler interface.
+func (n *docNode) UnmarshalJSON(buf []byte) error {
+	//Nodes can have plain strings as children. When that happens, we parse the
+	//plain string into a dummy node with the "__TEXT__" type.
+	var s string
+	err := json.Unmarshal(buf, &s)
+	if err == nil {
+		*n = docNode{"__TEXT__", map[string]string{"text": s}, nil}
+		return nil
+	}
+
+	var data struct {
+		Type     string            `json:"name"`
+		Attrs    map[string]string `json:"attrs"`
+		Children []docNode         `json:"children"`
+	}
+	err = json.Unmarshal(buf, &data)
+	*n = data
+	return err
+}
+
+func (n docNode) ChildrenToHTML() string {
+	var result []string
+	for _, child := range n.Children {
+		result = append(result, child.ToHTML())
+	}
+	return strings.Join(result, "")
+}
+
+func (n docNode) ToHTML() string {
+	switch n.Type {
+	case "Document":
+		return n.ChildrenToHTML()
+	case "head1":
+		return fmt.Sprintf(`<h1>%s</h1>`, n.ChildrenToHTML())
+	case "head2":
+		return fmt.Sprintf(`<h2>%s</h2>`, n.ChildrenToHTML())
+	case "Para":
+		return fmt.Sprintf(`<p>%s</p>`, n.ChildrenToHTML())
+	case "B":
+		return fmt.Sprintf(`<strong>%s</strong>`, n.ChildrenToHTML())
+	case "I":
+		return fmt.Sprintf(`<em>%s</em>`, n.ChildrenToHTML())
+	case "C", "F":
+		return fmt.Sprintf(`<code>%s</code>`, n.ChildrenToHTML())
+	case "Verbatim":
+		return fmt.Sprintf(`<pre><code>%s</code></pre>`, n.ChildrenToHTML())
+	case "__TEXT__":
+		return template.HTMLEscapeString(n.Attrs["text"])
+	default:
+		return fmt.Sprintf(`<span style="color:red">Unknown node type %s</span>`, template.HTMLEscapeString(n.Type))
 	}
 }

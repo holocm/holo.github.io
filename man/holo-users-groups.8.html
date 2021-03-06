@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>holo-users-groups(8)</title>
+    <link rel="stylesheet" type="text/css" href="/site.css">
+</head>
+<body>
+    <header>
+        <div id="header-buttons">
+            <a href="https://twitter.com/holocm" title="Follow on Twitter"><span class="logo logo-twitter"></span></a>
+            <a href="https://github.com/holocm" title="Fork on GitHub"><span class="logo logo-github"></span></a>
+        </div>
+        <div id="small-logo">
+            <a href="/index.html"><img src="/img/holo-logo.svg"></a>
+        </div>
+    </header>
+    <nav>
+        <ul>
+            <li><a href="/example.html" class="">Example</a></li>
+            <li><a href="/install.html" class="">Installation</a></li>
+        </ul>
+    </nav>
+    <section><h1>NAME</h1><p>holo-users-groups - Holo plugin to provision user accounts and groups</p><h1>DESCRIPTION</h1><p>This plugin provisions UNIX user accounts to <span style="color:red">Unknown node type L</span>, and groups to <span style="color:red">Unknown node type L</span>. Provisioning uses the standard commands <span style="color:red">Unknown node type L</span>, <span style="color:red">Unknown node type L</span>, <span style="color:red">Unknown node type L</span>, <span style="color:red">Unknown node type L</span>, <span style="color:red">Unknown node type L</span> and <span style="color:red">Unknown node type L</span>.</p><p>Entity definitions are placed at <code>/usr/share/holo/users-groups/*.toml</code> and are written in TOML. The following fields are accepted for users and groups:</p><pre><code>    [[group]]
+    name    = &#34;mygroup&#34;            # string,  the group name
+    system  = false                # if true, gives --system to groupadd
+    gid     = 1001                 # integer, given to groupadd as --gid
+
+    [[user]]
+    name    = &#34;myuser&#34;             # string,  the user name
+    system  = false                # if true, gives --system to useradd
+    comment = &#34;My Own User&#34;        # string,  given to useradd as --comment
+    uid     = 1023                 # integer, given to useradd as --uid
+    group   = &#34;mygroup&#34;            # string,  given to useradd as --gid
+    groups  = [ &#34;audio&#34;, &#34;video&#34; ] # strings, given to useradd as --groups
+    home    = &#34;/var/lib/myuser&#34;    # string,  given to useradd as --home-dir
+    shell   = &#34;/usr/bin/zsh&#34;       # string,  given to useradd as --shell</code></pre><p>In either case, <code>name</code> is the only required attribute. Multiple entity definitions may apply to the same entity if they have the same <code>name</code> attribute. This can be useful if a base hologram creates the entity and a later hologram requires more specific configuration for this entity. When entity definitions are stacked on each other, they are not allowed to contradict one another. (Different lists of auxiliary groups are allowed and will be merged.)</p><p>The entity names for users and groups are <code>user:$name</code> and <code>group:$name</code>, respectively, where <code>$name</code> is the user name or group name.</p><h2>Apply operation</h2><p>Ensure that the entity is present on the system and conforms to the entity definition. <code>--force</code> is required to overwrite properties that conflict between the actual state and the entity definition.</p><p>When an entity is applied for the first time, the previous state of the entity is saved into <code>/var/lib/holo/users-groups/base/$entity_id.toml</code>. If the entity did not exist before, the base image will only contain the type and name. The base image will be restored by <code>holo apply</code> when all definition files for this entity are deleted.</p><p>Whenever an entity is successfully applied, its state will be recorded into <code>/var/lib/holo/users-groups/provisioned/$entity_id.toml</code>. This provisioned image will be used for diffing.</p><span style="color:red">Unknown node type head3</span><p>The desired state of the entity is computed by merging each attribute of the entity definition into the base image at <code>/var/lib/holo/users-groups/base/$entity_id.toml</code>. For most attributes, merging succeeds if the attribute is set by only one side or the other (or by neither side), or if the attribute is set to the same value on both sides.</p><p>As an exception, the <code>groups</code> field (the list of auxiliary groups) of a user definition is merged by compiling a list of all groups mentioned on either side. For example, if <code>/etc/passwd</code> contains a user <code>http</code> by default, which is part of the auxiliary group <code>grp1</code>, and you then add an entity definition like so:</p><pre><code>    [[user]]
+    name = &#34;http&#34;
+    groups = [&#34;grp2&#34;]</code></pre><p>Then after <code>holo apply user:http</code>, the user will be part of both <code>grp1</code> and <code>grp2</code>. If you want to overwrite the set of auxiliary groups from the base image, set the <code>skipBaseGroups</code> flag like so:</p><pre><code>    [[user]]
+    name = &#34;http&#34;
+    groups = [&#34;grp2&#34;]
+    skipBaseGroups = true</code></pre><h2>Diff operation</h2><p>Display a diff if the current state of the entity conflicts with the entity definition. The right side of the diff is always a serialization of the actual state of the entity, as stated by <code>/etc/passwd</code> and/or <code>/etc/group</code>. For example:</p><pre><code>    diff --holo /var/lib/holo/users-groups/provisioned/user:wrongshell.toml /tmp/holo/users-groups/user:wrongshell/actual.toml
+    --- /var/lib/holo/users-groups/provisioned/user:wrongshell.toml
+    +++ /tmp/holo/users-groups/user:wrongshell/actual.toml
+    @@ -3,4 +3,4 @@ name = &#34;wrongshell&#34;
+     uid = 1005
+     home = &#34;/home/wrongshell&#34;
+     group = &#34;users&#34;
+    -shell = &#34;/bin/zsh&#34;
+    +shell = &#34;/bin/bash&#34;</code></pre><p>For entities that have been applied at least once, the left side of the diff is <code>/var/lib/holo/users-groups/provisioned/$entity_id.toml</code>. For entities that have not been applied yet, the left side of the diff is the &#34;desired state&#34;, obtained by merging the entity definition with the actual state. If any attributes have conflicting values, the entity definition takes precedence.</p><h1>SEE ALSO</h1><p><span style="color:red">Unknown node type L</span> provides the user interface for using this plugin.</p><h1>AUTHOR</h1><p>Stefan Majewsky</p><p>Further documentation is available at the project homepage: https://holocm.org</p><p>Please report any issues and feature requests at GitHub: https://github.com/holocm/holo/issues</p></section>
+</body>

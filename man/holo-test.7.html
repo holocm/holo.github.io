@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>holo-test(7)</title>
+    <link rel="stylesheet" type="text/css" href="/site.css">
+</head>
+<body>
+    <header>
+        <div id="header-buttons">
+            <a href="https://twitter.com/holocm" title="Follow on Twitter"><span class="logo logo-twitter"></span></a>
+            <a href="https://github.com/holocm" title="Fork on GitHub"><span class="logo logo-github"></span></a>
+        </div>
+        <div id="small-logo">
+            <a href="/index.html"><img src="/img/holo-logo.svg"></a>
+        </div>
+    </header>
+    <nav>
+        <ul>
+            <li><a href="/example.html" class="">Example</a></li>
+            <li><a href="/install.html" class="">Installation</a></li>
+        </ul>
+    </nav>
+    <section><h1>NAME</h1><p>holo-test - test runner for Holo plugins</p><h1>SYNOPSIS</h1><pre><code>    holo-test &lt;name&gt; &lt;directory&gt;...</code></pre><h1>DESCRIPTION</h1><p>Holo plugins can be tested by executing Holo commands on fabricated file system trees, and comparing the output and resulting file system with the expected results. The <strong>holo-test</strong> program is a test runner for such test cases.</p><p>Each test case is a directory that must contain the following files:</p><pre><code>    source-tree                 &lt;-- a dump of the root directory before running `holo apply`
+    expected-tree               &lt;-- a dump of the expected root directory after running `holo apply`
+                                    (see &#34;DUMP FORMAT&#34; below for details)
+    expected-scan-output        &lt;-- expected output of `holo scan`
+    expected-diff-output        &lt;-- expected output of `holo diff`
+    expected-apply-output       &lt;-- expected output of `holo apply`
+    expected-apply-force-output &lt;-- expected output of `holo apply --force`
+                                    (not always required, see below)</code></pre><p>For each file like <code>expected-%</code>, <strong>holo-test</strong> places the actual outputs in the file <code>%</code> (i.e. <code>tree</code>, <code>scan-output</code>, and so on). For files like <code>%-output</code>, the outputs have any color codes stripped. The verbatim program outputs are placed at <code>colored-%-output</code> (e.g. <code>colored-scan-output</code>).</p><p>Each <code>%-output</code> and <code>colored-%-output</code> contains a final line indicating the exit code of the <strong>holo</strong> process, in the format</p><pre><code>    exit status 2</code></pre><h2>How tests are run</h2><p>The file <code>source-tree</code> is materialized into a directory <code>target/</code> directly inside the test case directory. <strong>holo-test</strong> then runs, in that order,</p><pre><code>    holo scan
+    holo diff
+    holo apply
+    holo apply --force # maybe, see below</code></pre><p>in a quasi-chroot here and seeing what output it produces and what it does to this filesystem tree. If the output of <code>holo apply</code> mentions the word <code>--force</code>, then <code>holo apply --force</code> is run, too. This covers cases where plugins refuse to overwrite modified entities, printing instead something like:</p><pre><code>    !! Target has been modified (use --force to overwrite)</code></pre><p>Since you&#39;re probably testing a plugin that&#39;s not yet installed, you need to tell Holo to pick it up from the proper location. There&#39;s a special syntax allowed in holorc for that:</p><pre><code>    plugin foobar=../../../build/holo-foobar</code></pre><p>The path must be relative to the test case directory, since that&#39;s the working directory where Holo is run.</p><h2>Running a test</h2><p>To run any number of tests, invoke holo-test with the name of the thing you&#39;re testing (typically the name of a Holo plugin), followed by the paths of the test case directories. The first argument is only used for formatting the output.</p><pre><code>    $ holo-test &#39;holo-files plugin&#39; ./tests/holo-files/*
+    &gt;&gt; Running test case tests/holo-files/01-first...
+    &gt;&gt; Running test case tests/holo-files/02-second...
+    &gt;&gt; Running test case tests/holo-files/03-third...
+    &gt;&gt; All tests for holo-files plugin completed successfully.</code></pre><p>The test will usually output just a progress display (one line per test case). If a test fails, the failing parts will be printed on the command line. To flag test failure when run in Continuous Integration setups, <code>holo-test</code> will exit with non-zero status when one or more test cases fail.</p><h1>DUMP FORMAT</h1><p>The files <code>source-tree</code>, <code>tree</code> and <code>expected-tree</code> use a simple format to describe a hierarchy of directories, files and symlinks in a single file. For example:</p><pre><code>    file 0755 ./usr/lib/example.sh
+    #!/bin/sh
+    while read LINE; do
+        echo &#34;example: $LINE&#34;
+    done
+    ----------------------------------------
+    symlink 0777 ./usr/lib/other-example.sh
+    example.sh
+    ----------------------------------------
+    directory 0700 ./var/lib/example/
+    ----------------------------------------</code></pre><p>The dump consists of multiple sections, each terminated by a line containing a nonzero number of dashes. The first line of each section is a header with three space-separated fields: a file type (<code>file</code> for regular files, <code>symlink</code> for symbolic links, or <code>directory</code> for directories), the file&#39;s access rights in octal notation, and the path to the file (relative to the root directory of the <code>target/</code> directory).</p><p>For regular files, the header is followed by the contents of the file (possibly none). For symbolic links, the header is followed by exactly one nonempty line containing the link&#39;s target. For directories, the section contains only the header and no further lines.</p><h1>SEE ALSO</h1><p><span style="color:red">Unknown node type L</span>, <span style="color:red">Unknown node type L</span></p><h1>AUTHOR</h1><p>Stefan Majewsky</p><p>Further documentation is available at the project homepage: https://holocm.org</p><p>Please report any issues and feature requests at GitHub: https://github.com/holocm/holo/issues</p></section>
+</body>

@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>holo-run-scripts(8)</title>
+    <link rel="stylesheet" type="text/css" href="/site.css">
+</head>
+<body>
+    <header>
+        <div id="header-buttons">
+            <a href="https://twitter.com/holocm" title="Follow on Twitter"><span class="logo logo-twitter"></span></a>
+            <a href="https://github.com/holocm" title="Fork on GitHub"><span class="logo logo-github"></span></a>
+        </div>
+        <div id="small-logo">
+            <a href="/index.html"><img src="/img/holo-logo.svg"></a>
+        </div>
+    </header>
+    <nav>
+        <ul>
+            <li><a href="/example.html" class="">Example</a></li>
+            <li><a href="/install.html" class="">Installation</a></li>
+        </ul>
+    </nav>
+    <section><h1>NAME</h1><p>holo-run-scripts - Holo plugin to run custom provisioning scripts</p><h1>DESCRIPTION</h1><p>This plugin can be used to run custom provisioning scripts during <code>holo apply</code>. Scripts must be intalled into the directory <code>/usr/share/holo/run-scripts</code> and must be executable. Instead of a script, a binary, or a symlink to a script or binary, can also be installed. Scripts will be executed in alphabetical order.</p><p>The entity name for a script is <code>script:$name</code>, where <code>$name</code> is the basename of the file.</p><h2>Diff</h2><p>Holo cannot compute a meaningful diff for the effect of an arbitrary script, so <code>holo diff script:$name</code> will not produce any output.</p><h1>SEE ALSO</h1><p><span style="color:red">Unknown node type L</span> provides the user interface for using this plugin.</p><h1>AUTHOR</h1><p>Stefan Majewsky</p><p>Further documentation is available at the project homepage: https://holocm.org</p><p>Please report any issues and feature requests at GitHub: https://github.com/holocm/holo/issues</p></section>
+</body>

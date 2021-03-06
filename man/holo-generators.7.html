@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>holo-generators(7)</title>
+    <link rel="stylesheet" type="text/css" href="/site.css">
+</head>
+<body>
+    <header>
+        <div id="header-buttons">
+            <a href="https://twitter.com/holocm" title="Follow on Twitter"><span class="logo logo-twitter"></span></a>
+            <a href="https://github.com/holocm" title="Fork on GitHub"><span class="logo logo-github"></span></a>
+        </div>
+        <div id="small-logo">
+            <a href="/index.html"><img src="/img/holo-logo.svg"></a>
+        </div>
+    </header>
+    <nav>
+        <ul>
+            <li><a href="/example.html" class="">Example</a></li>
+            <li><a href="/install.html" class="">Installation</a></li>
+        </ul>
+    </nav>
+    <section><h1>NAME</h1><p>holo-generators - dynamically generate resource files for other plugins</p><h1>DESCRIPTION</h1><p>Generators are executable files placed under <code>/usr/share/holo/generators</code>. Holo will execute generators <strong>in lexical order</strong> before asking plugins to scan their resource files. An output directory will be supplied to each generator in the environment variable <code>$OUT</code>. Except for caching purposes (see below), generators shall only write to <code>$OUT/</code>.</p><p>The structure under <code>$OUT/</code> is the same as for static resource files under <code>/usr/share/holo/</code>. For example, to generate resource files for <span style="color:red">Unknown node type L</span>, a generator may place files at <code>$OUT/files/</code>.</p><p>Generated files placed under <code>$OUT/</code> and static files under <code>/usr/share/holo/</code> will be made available to plugins, with generated files taking precedence over static files. For instance, if a generator places a file at <code>$OUT/files/20-webserver/etc/nginx/nginx.conf</code>, the <span style="color:red">Unknown node type L</span> plugin will see this file in its <code>$HOLO_RESOURCE_DIR</code> instead of <code>/usr/share/holo/files/20-webserver/etc/nginx/nginx.conf</code>.</p><h1>ENVIRONMENT</h1><p>Besides <code>$OUT</code>, generators are provided with the following environment variables.</p><span style="color:red">Unknown node type over-text</span><h1>SEE ALSO</h1><p><span style="color:red">Unknown node type L</span> provides the user interface for this functionality.</p><h1>AUTHORS</h1><p>Peter Werner, Stefan Majewsky</p><p>Further documentation is available at the project homepage: https://holocm.org</p><p>Please report any issues and feature requests at GitHub: https://github.com/holocm/holo/issues</p></section>
+</body>
