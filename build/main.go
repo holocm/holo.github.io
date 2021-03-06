@@ -24,9 +24,11 @@ import (
 	"html/template"
 	"io/ioutil"
 	"log"
+	"math"
 	"os"
 	"path/filepath"
 	"strings"
+	"unicode"
 
 	"github.com/golang-commonmark/markdown"
 )
@@ -181,7 +183,7 @@ func (n docNode) ToHTML() string {
 	case "C", "F":
 		return fmt.Sprintf(`<code>%s</code>`, n.ChildrenToHTML())
 	case "Verbatim":
-		return fmt.Sprintf(`<pre><code>%s</code></pre>`, n.ChildrenToHTML())
+		return fmt.Sprintf(`<pre><code>%s</code></pre>`, removeRedundantIndentation(n.ChildrenToHTML()))
 	case "__TEXT__":
 		return template.HTMLEscapeString(n.Attrs["text"])
 	case "L":
@@ -201,4 +203,39 @@ func (n docNode) ToHTML() string {
 		contentsJSON, _ := json.Marshal(contents)
 		return fmt.Sprintf(`<span style="color:red">UNKNOWN %s</span>`, string(contentsJSON))
 	}
+}
+
+//Takes a codeblock and removes leading spaces that are shared by all nonempty lines.
+func removeRedundantIndentation(in string) string {
+	lines := strings.Split(in, "\n")
+	isNonEmptyLine := make(map[int]bool)
+
+	//count shared indentation
+	commonIndent := math.MaxInt16
+	for lineIdx, line := range lines {
+		indent := -1
+		for idx, char := range line {
+			if !unicode.IsSpace(char) {
+				indent = idx
+				break
+			}
+		}
+		if indent == -1 {
+			//ignore lines with no non-printable chars
+			continue
+		}
+		isNonEmptyLine[lineIdx] = true
+		if commonIndent > indent {
+			commonIndent = indent
+		}
+	}
+
+	//remove shared indentation from nonempty lines
+	for lineIdx, line := range lines {
+		if isNonEmptyLine[lineIdx] {
+			lines[lineIdx] = line[commonIndent:]
+		}
+	}
+
+	return strings.Join(lines, "\n")
 }
