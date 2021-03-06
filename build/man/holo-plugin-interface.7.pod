@@ -1,0 +1,330 @@
+=encoding UTF-8
+
+=head1 NAME
+
+holo-plugin-interface - API specification for Holo plugins
+
+=head1 DESCRIPTION
+
+Holo can leverage plugins to provision previously unknown entity types. For
+example, given a hypothetical "FooSQL" database, someone could implement a
+plugin for Holo that provisions FooSQL databases or database users. This
+document describes the interface that Holo uses to find, invoke, and communicate
+with its plugins.
+
+This interface is deliberately designed around classic files and text streams,
+so that it can easily be implemented even by shell scripts without needing to
+resort to complex parser libraries.
+
+This document describes B<version 3> of the Holo plugin interface.
+
+The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD",
+"SHOULD NOT", "RECOMMENDED",  "MAY", and "OPTIONAL" in this document are to
+be interpreted as described in L<RFC 2119|https://tools.ietf.org/html/rfc2119>.
+
+=head2 Plugin discovery
+
+Each plugin MUST have an ID following the format C<[a-z0-9][a-z0-9-]*>. When
+choosing the plugin ID, redundant verbs like C<manage> or C<provision> SHOULD
+be avoided. A good plugin ID is just the name of the software being configured
+by the plugin. For example, an appropriate plugin ID for the aforementioned
+FooSQL plugin would be C<foosql>. The things provisioned MAY be referenced in
+plural form if disambiguation is required. For example, if FooSQL is configured
+by multiple plugins, appropriate plugin IDs could include C<foosql-databases>
+and C<foosql-users>.
+
+Plugins are not discovered automatically. They MUST be referenced in
+F<$HOLO_ROOT_DIR/etc/holorc> or F<$HOLO_ROOT_DIR/etc/holorc.d/*> (see
+L<holorc(5)>) by adding the line in one of the following forms:
+
+    plugin $PLUGIN_ID
+    plugin $PLUGIN_ID=$PLUGIN_BINARY
+
+If the form without an explicit C<$PLUGIN_BINARY> is given, then Holo will use a
+default value of
+
+    PLUGIN_BINARY=/usr/lib/holo/holo-$PLUGIN_ID
+
+Note that this default value for C<$PLUGIN_BINARY> does NOT respect
+C<$HOLO_ROOT_DIR>.
+
+It is RECOMMENDED that plugins install a L<holorc(5)> snippet to achieve this:
+
+    $ cat $HOLO_ROOT_DIR/etc/holorc.d/50-foosql
+    # This file is part of the holo-foosql package.
+    plugin foosql
+
+Old versions of Holo (prior to 1.2) required that the F</etc/holorc> be
+modified via L<holo-files(8)> through the use of post-install/upgrade/remove
+scripts. This is no longer required if holorc snippets are used.
+
+=head1 ENVIRONMENT
+
+Plugins SHALL locate and store their data in the directories named by the
+following environment variables which are set by Holo before executing the
+plugin:
+
+=over 4
+
+=item C<$HOLO_API_VERSION> (default: C<3>)
+
+This variable is a single positive integer identifying the version of the API
+that the plugin is expected to conform to. Plugins SHALL NOT require that
+C<$HOLO_API_VERSION> be defined for the C<info> operation, but SHOULD verify
+that they support the specified version for all other operations.
+
+=item C<$HOLO_ROOT_DIR> (default: F</>)
+
+Plugins MUST recognize the environment variable C<$HOLO_ROOT_DIR>: if this
+variable exists and is set to a value other than F</>, then plugins SHALL assume
+that Holo is running in test mode. The variable holds the path to a directory
+resembling a normal root partition (at least the parts needed for the test
+scenario).
+
+In test mode, plugins SHOULD NOT talk to system-level daemons.  In test mode,
+plugins SHOULD NOT write files outside the C<$HOLO_ROOT_DIR>; with the exception
+of C<$HOLO_CACHE_DIR> (defined below), which may or may not be inside of
+C<$HOLO_ROOT_DIR>. Appropriate mock implementations SHALL be used
+instead. Modifying files below C<$HOLO_ROOT_DIR> is allowed.
+
+=item C<$HOLO_RESOURCE_DIR> (default: F<$HOLO_CACHE_DIR/generated-resources/$PLUGIN_ID>)
+
+Where plugins can find their resources. Holo will refuse to operate if the
+resource directory does not exist, thus plugins SHOULD create the default
+path at installation time.
+
+Up until Holo 3.0, this was set to F<$HOLO_ROOT_DIR/usr/share/holo/$PLUGIN_ID>,
+where static resource files are installed. Since Holo 3.0 introduced support
+for generated resource files, plugins now receive a "virtual resource
+directory" on tmpfs, into which generated resource files are rendered, and into
+which static resource files are copied before the plugin gets executed.
+
+=item C<$HOLO_STATE_DIR> (default: F<$HOLO_ROOT_DIR/var/lib/holo/$PLUGIN_ID>)
+
+Where plugins can store persistent state between runs of Holo. If the state
+directory is missing, Holo will create it before calling the plugin executable.
+However, plugins are encouraged to create the state directory at their
+installation time if they are going to need it.
+
+=item C<$HOLO_CACHE_DIR> (default: below C<${TMPDIR:-/tmp}>)
+
+Where plugins may store temporary data, such as results from an initial scan
+operation. Holo will create this directory when it starts up, and clean it up
+when it exits.
+
+=back
+
+Future versions of Holo may start to choose these paths differently (or allow
+the user to do so), but the default values are stable and can safely be
+communicated to users in documentation. Because these paths can be chosen by
+Holo, plugins SHALL always use the paths in the environment variables rather
+than trying to compute them by themselves. The paths may or may not be given as
+absolute paths, so plugins must be careful to handle relative paths correctly if
+they change directories during operation.
+
+=head1 EXECUTION
+
+The plugin binary is executed one or multiple times when Holo is run, each time
+with a different operation.
+
+=head2 The C<info> operation
+
+The first invocation is always with the single argument C<info>:
+
+    $PLUGIN_BINARY info
+
+The plugin shall then report metadata about itself on stdout, as key-value
+pairs in the form C<key=value>, with a newline after each value. The following
+keys are recognized by Holo:
+
+=over 4
+
+=item C<MIN_API_VERSION>, C<MAX_API_VERSION> (required)
+
+These two keys describe an interval of versions of this plugin interface that
+the plugin is compatible with. Versions are single, positive integers. For
+example:
+
+    MIN_API_VERSION=3
+    MAX_API_VERSION=5
+
+Both values may be identical, of course. If they're not, then Holo will attempt
+to choose a plugin interface version that works both for it and the plugin, and
+announce that version to the plugin in subsequent operations through the
+C<$HOLO_API_VERSION> environment variable. The plugin SHALL then conform to
+this version of the plugin interface.
+
+=back
+
+All other keys are ignored.
+
+=head2 The C<scan> operation
+
+After C<info> always comes another invocation with the single argument C<scan>:
+
+    $PLUGIN_BINARY scan
+
+The plugin shall then scan its C<$HOLO_RESOURCE_DIR> for entities that it can
+provision. Any errors encountered shall be reported on stderr. If any fatal
+errors are encountered, the plugin shall exit with non-zero exit code.
+
+At the end of scanning, the plugin shall provide on stdout a report for each of
+the entities found, in the following form (this example being from the C<files>
+plugin from core Holo):
+
+    ENTITY: file:/etc/locale.gen
+    store at: /var/lib/holo/base/etc/locale.gen
+    SOURCE: /usr/share/holo/files/00-base/etc/locale.gen
+    apply: /usr/share/holo/files/00-base/etc/locale.gen
+
+Each line has the form C<key: value>. Most lines are informational content that
+is not processed further by Holo (except for pretty-printing), and can be used
+to convey any sort of useful information about the entity to the user. However,
+keys with all capital letters are reserved for special semantics. Currently, the
+following special keys are known:
+
+=over 4
+
+=item C<ENTITY>
+
+The C<ENTITY> key starts a new entity. The value after the colon is the entity
+ID as chosen by the plugin. The recommended format for entity IDs is
+C<type:identifier>, with the type in singular form. For example, the
+hypothetical C<foosql> plugin could report entities like
+C<foosql-db:production> or C<foosql-user:sarah>.
+
+Entity IDs MUST NOT look like filesystem paths, since Holo's interface uses
+entity IDs and paths to resource files in the same place.
+
+=item C<SOURCE>
+
+The C<SOURCE> key names a resource file (below C<$HOLO_RESOURCE_DIR>) from
+which the entity in question has been read. If multiple such files exist,
+multiple C<SOURCE> lines can be printed.
+
+This link is only used internally to resolve resource file arguments into the
+entities defined by them. It is therefore considered good practice to list the
+resource files a second time as informational text, with appropriate lower-case
+keys. The C<users-groups> plugin demonstrates this practice:
+
+    ENTITY: group:sudo
+    SOURCE: /usr/share/holo/users-groups/00-base.toml
+    found in: /usr/share/holo/users-groups/00-base.toml
+    with: type: system
+
+=item C<ACTION>
+
+Lines of the form C<ACTION: verb (reason)> are used when applying the entity
+will do something else than provisioning it. The line shall contain a verb
+describing the action taken, and a reason for doing so. For example, the
+C<files> plugin uses the action verb C<Scrubbing> to signal that a deleted
+configuration file is being cleaned up after.
+
+    ENTITY: file:/etc/targetfile-deleted.conf
+    ACTION: Scrubbing (target was deleted)
+    delete: /var/lib/holo/files/base/etc/targetfile-deleted.conf
+
+When not given, Holo will display a generic action verb like "Working on"
+or "Applying".
+
+=back
+
+The report for an entity ends at the next C<ENTITY: ID> line, or when EOF is
+encountered.
+
+If scanning for entities is expensive, plugins should cache results of their
+scanning in C<$HOLO_CACHE_DIR> (as described above).
+
+=head2 The C<apply> operation
+
+If the user requests that one or multiple entities be provisioned (with the
+C<holo apply> command), then for each of the selected entities, the
+corresponding plugin will be called like this:
+
+    $PLUGIN_BINARY apply $ENTITY_ID
+
+During this operation, the plugin can reuse results from the previously
+conducted scanning operation if they have been cached in C<$HOLO_CACHE_DIR>.
+Informational output shall be printed on stdout, errors and warnings shall be
+printed on stderr. This output will be passed on to the user directly. If an
+error occurred during provisioning, the plugin shall exit with non-zero exit
+code.
+
+During this operation, the plugin process's file descriptor no. 3 is opened by
+Holo, and the plugin can write the following messages into this FD to invoke
+special behavior in Holo:
+
+=over 4
+
+=item C<"not changed\n">
+
+The entity is already in the desired state, so no changes have been made. Holo
+will format its output accordingly (at the time of this writing, by omitting the
+entity from the output).
+
+=item C<"requires --force to overwrite\n">
+
+The entity was provisioned by this plugin, but has been changed by a user or
+external application since then. Holo will output an error message indicating
+that C<--force> is needed to overwrite these manual changes.
+
+=item C<"requires --force to restore\n">
+
+Same as above, but indicates that the entity was not just changed, but deleted
+by a user or external application.
+
+=back
+
+=head2 The C<force-apply> operation
+
+During the C<apply> operation, plugins shall refuse to provision entities that
+appear to have been edited or deleted by the user or an external application.
+However, when the plugin is called like this:
+
+    $PLUGIN_BINARY force-apply $ENTITY_ID
+
+Then the plugin shall overwrite any external changes to the selected entity and
+bring it into the desired target state with all means possible. Otherwise, the
+C<force-apply> operation works just like C<apply>.
+
+=head2 The C<diff> operation
+
+If the user requests that a diff be printed for one or multiple entities (with
+the C<holo diff> command), then for each of the selected entities, the
+corresponding plugin will be called like this:
+
+    $PLUGIN_BINARY diff $ENTITY_ID
+
+If the entity does not have a meaningful diff (e.g. for the C<run-scripts>
+plugin), the plugin shall exit with zero exit code without doing anything.
+
+Otherwise, two NUL-terminated filesystem paths must be printed on file
+descriptor 3. The first file represents the state of the entity as it was last
+applied by the plugin (i.e., the state the plugin expects it to currently be
+in), the second file represents the actual current state of the entity.
+
+The plugin is allowed to return paths that do not exist in the file system, in
+which case Holo will diff against F</dev/null> instead. F</dev/null> can also be
+given explicitly instead of a file that is missing. (The first file will be
+missing when the entity is orphaned, and the second file will be missing when
+the entity was deleted by the user or an external program.)
+
+For entities that are not backed by a file, the plugin is allowed to make up a
+useful textual representation of the entity, and write appropriate files to the
+C<$HOLO_CACHE_DIR>. An example of this is the C<holo-users-groups> plugin.
+
+=head1 SEE ALSO
+
+L<holo(8)>, L<holorc(5)>
+
+L<holo-test(7)> (test runner for Holo plugins)
+
+=head1 AUTHOR
+
+Stefan Majewsky
+
+Further documentation is available at the project homepage: L<https://holocm.org>
+
+Please report any issues and feature requests at GitHub: L<https://github.com/holocm/holo/issues>
+
+=cut

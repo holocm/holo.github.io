@@ -1,0 +1,76 @@
+=encoding UTF-8
+
+=head1 NAME
+
+holorc, holorc.d - configuration file for L<holo(8)>
+
+=head1 SYNOPSIS
+
+    /etc/holorc
+
+    /etc/holorc.d/*
+
+=head1 DESCRIPTION
+
+The holorc file defines which plugins will be loaded and used by Holo, and in
+which order. Blank lines, and comment lines starting with a C<#> character are ignored.
+
+Non-blank and non-comment lines can be of one of two forms:
+
+    plugin $PLUGIN_ID
+    plugin $PLUGIN_ID=$PLUGIN_BINARY
+
+where C<$PLUGIN_ID> is the alphanumeric identifier of the plugin, and
+C<$PLUGIN_BINARY> is the path to the plugin executable file.  If the
+form without an explicit C<$PLUGIN_BINARY> is given, then Holo will
+use a default value of
+
+    PLUGIN_BINARY=/usr/lib/holo/holo-$PLUGIN_ID
+
+The plugin identifier is encoded in several paths that are relevant
+for the plugin:
+
+=over 4
+
+=item F</usr/lib/holo/holo-$PLUGIN_ID>
+
+Unless C<$PLUGIN_BINARY> is explicitly specified, this is plugin
+executable is installed at.
+
+=item F</usr/share/holo/$PLUGIN_ID/>
+
+Configuration packages install resources for this plugin below this
+directory.
+
+=item F</var/lib/holo/$PLUGIN_ID/>
+
+The plugin stores its persistent state at in the directory.
+
+=back
+
+The holorc file can also be provided as snippets in F</etc/holorc.d/*>.
+Snippets will be parsed in alphabetical order, before the actual F</etc/holorc>
+is parsed.
+
+=head1 BEST PRACTICES
+
+Plugins are encouraged to add themselves to F</etc/holorc> at install time by
+installing a holorc snippet. For example:
+
+    $ cat /etc/holorc.d/20-users-groups
+    # This file is part of the holo-users-groups package.
+    plugin users-groups
+
+=head1 SEE ALSO
+
+L<holo(8)>, L<holo-plugin-interface(7)>
+
+=head1 AUTHOR
+
+Stefan Majewsky
+
+Further documentation is available at the project homepage: L<https://holocm.org>
+
+Please report any issues and feature requests at GitHub: L<https://github.com/holocm/holo/issues>
+
+=cut

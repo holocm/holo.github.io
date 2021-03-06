@@ -1,0 +1,124 @@
+=encoding UTF-8
+
+=head1 NAME
+
+holo-test - test runner for Holo plugins
+
+=head1 SYNOPSIS
+
+    holo-test <name> <directory>...
+
+=head1 DESCRIPTION
+
+Holo plugins can be tested by executing Holo commands on fabricated file system
+trees, and comparing the output and resulting file system with the expected
+results. The B<holo-test> program is a test runner for such test cases.
+
+Each test case is a directory that must contain the following files:
+
+    source-tree                 <-- a dump of the root directory before running `holo apply`
+    expected-tree               <-- a dump of the expected root directory after running `holo apply`
+                                    (see "DUMP FORMAT" below for details)
+    expected-scan-output        <-- expected output of `holo scan`
+    expected-diff-output        <-- expected output of `holo diff`
+    expected-apply-output       <-- expected output of `holo apply`
+    expected-apply-force-output <-- expected output of `holo apply --force`
+                                    (not always required, see below)
+
+For each file like C<expected-%>, B<holo-test> places the actual outputs in the
+file C<%> (i.e. C<tree>, C<scan-output>, and so on). For files like
+C<%-output>, the outputs have any color codes stripped. The verbatim program
+outputs are placed at C<colored-%-output> (e.g. C<colored-scan-output>).
+
+Each C<%-output> and C<colored-%-output> contains a final line indicating the
+exit code of the B<holo> process, in the format
+
+    exit status 2
+
+=head2 How tests are run
+
+The file C<source-tree> is materialized into a directory C<target/> directly
+inside the test case directory. B<holo-test> then runs, in that order,
+
+    holo scan
+    holo diff
+    holo apply
+    holo apply --force # maybe, see below
+
+in a quasi-chroot here and seeing what output it produces and what it does to
+this filesystem tree. If the output of C<holo apply> mentions the word
+C<--force>, then C<holo apply --force> is run, too. This covers cases where
+plugins refuse to overwrite modified entities, printing instead something like:
+
+    !! Target has been modified (use --force to overwrite)
+
+Since you're probably testing a plugin that's not yet installed, you need to
+tell Holo to pick it up from the proper location. There's a special syntax
+allowed in holorc for that:
+
+    plugin foobar=../../../build/holo-foobar
+
+The path must be relative to the test case directory, since that's the working
+directory where Holo is run.
+
+=head2 Running a test
+
+To run any number of tests, invoke holo-test with the name of the thing you're
+testing (typically the name of a Holo plugin), followed by the paths of the
+test case directories. The first argument is only used for formatting the
+output.
+
+    $ holo-test 'holo-files plugin' ./tests/holo-files/*
+    >> Running test case tests/holo-files/01-first...
+    >> Running test case tests/holo-files/02-second...
+    >> Running test case tests/holo-files/03-third...
+    >> All tests for holo-files plugin completed successfully.
+
+The test will usually output just a progress display (one line per test case).
+If a test fails, the failing parts will be printed on the command line. To flag
+test failure when run in Continuous Integration setups, C<holo-test> will exit
+with non-zero status when one or more test cases fail.
+
+=head1 DUMP FORMAT
+
+The files C<source-tree>, C<tree> and C<expected-tree> use a simple format to
+describe a hierarchy of directories, files and symlinks in a single file. For
+example:
+
+    file 0755 ./usr/lib/example.sh
+    #!/bin/sh
+    while read LINE; do
+        echo "example: $LINE"
+    done
+    ----------------------------------------
+    symlink 0777 ./usr/lib/other-example.sh
+    example.sh
+    ----------------------------------------
+    directory 0700 ./var/lib/example/
+    ----------------------------------------
+
+The dump consists of multiple sections, each terminated by a line containing a
+nonzero number of dashes. The first line of each section is a header with three
+space-separated fields: a file type (C<file> for regular files, C<symlink> for
+symbolic links, or C<directory> for directories), the file's access rights in
+octal notation, and the path to the file (relative to the root directory of the
+C<target/> directory).
+
+For regular files, the header is followed by the contents of the file (possibly
+none). For symbolic links, the header is followed by exactly one nonempty line
+containing the link's target. For directories, the section contains only the
+header and no further lines.
+
+=head1 SEE ALSO
+
+L<holo(8)>, L<holo-plugin-interface(7)>
+
+=head1 AUTHOR
+
+Stefan Majewsky
+
+Further documentation is available at the project homepage: L<https://holocm.org>
+
+Please report any issues and feature requests at GitHub: L<https://github.com/holocm/holo/issues>
+
+=cut

@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>holo-files(8)</title>
+    <link rel="stylesheet" type="text/css" href="/site.css">
+</head>
+<body>
+    <header>
+        <div id="header-buttons">
+            <a href="https://twitter.com/holocm" title="Follow on Twitter"><span class="logo logo-twitter"></span></a>
+            <a href="https://github.com/holocm" title="Fork on GitHub"><span class="logo logo-github"></span></a>
+        </div>
+        <div id="small-logo">
+            <a href="/index.html"><img src="/img/holo-logo.svg"></a>
+        </div>
+    </header>
+    <nav>
+        <ul>
+            <li><a href="/example.html" class="">Example</a></li>
+            <li><a href="/man/holo.8.html" class="self-link">Docs</a></li>
+            <li><a href="/install.html" class="">Installation</a></li>
+        </ul>
+    </nav>
+    <nav class="secondary">
+        <ul>
+            <li><a href="/man/holo.8.html" class="">holo(8)</a></li>
+            <li><a href="/man/holo-build.8.html" class="">holo-build(8)</a></li>
+            <li><a href="/man/holo-files.8.html" class="self-link">holo-files(8)</a></li>
+            <li><a href="/man/holo-generators.7.html" class="">holo-generators(7)</a></li>
+            <li><a href="/man/holo-plugin-interface.7.html" class="">holo-plugin-interface(7)</a></li>
+            <li><a href="/man/holo-run-scripts.8.html" class="">holo-run-scripts(8)</a></li>
+            <li><a href="/man/holo-ssh-keys.8.html" class="">holo-ssh-keys(8)</a></li>
+            <li><a href="/man/holo-test.7.html" class="">holo-test(7)</a></li>
+            <li><a href="/man/holo-users-groups.8.html" class="">holo-users-groups(8)</a></li>
+            <li><a href="/man/holorc.5.html" class="">holorc(5)</a></li>
+        </ul>
+    </nav>
+    <section><h1>NAME</h1><p>holo-files - Holo plugin to provision files</p><h1>DESCRIPTION</h1><p>When using Holo, configuration is usually stored in system packages, so files can be provisioned by just including them in a configuration package. This plugin extends this basic capability to allow one package (a configuration package) to overwrite or modify a file that has been installed by another package (an application package).</p><h2>Structure of the resource directory</h2><p>Configuration packages that want to use this plugin must place files in the resource directory at <code>/usr/share/holo/files</code>. Each <strong>resource</strong> file works on a certain <strong>target</strong>, as determined by its file name:</p><pre><code>/usr/share/holo/files/20-webserver/etc/nginx/nginx.conf
+                      \__________/\___________________/
+                        |           |
+                        |           `-- path to target
+                        |
+                        `-- disambiguator</code></pre><p>The <strong>disambiguator</strong> is always required, and allows multiple resource files to operate on the same target (sorted alphabetically by their disambiguator). The pattern of putting a number at the start of the disambiguator is not required, but useful to control the ordering of resource files.</p><p>Each target file that has such resource files is an <strong>entity</strong> within Holo. Its entity ID is <code>file:$target</code> where <code>$target</code> is the absolute path to the target file.</p><h2>Application strategy</h2><p>Resource files are applied on the <strong>target base</strong>, the initial version of the target file that was found during the first <code>holo apply</code> run. This target base is saved at <code>/var/lib/holo/files/base/$target</code>.</p><p>Resource files that are plain files or symlinks will just overwrite the target base (or all previous entries), whereas executable resource files with an extra <code>.holoscript</code> suffix can be used to modify the target base (or the result of a previous application step). The target contents will be piped through the script. This is typically used when the default configuration for an application shall be used, but with some minor modifications. The following example uses the default configuration for <a href="https://www.man7.org/linux/man-pages/man8/pacman.8.html">pacman(8)</a>, but enables the &#34;Color&#34; and &#34;TotalDownload&#34; options:</p><pre><code>$ cat /usr/share/holo/files/20-enable-color/etc/pacman.conf.holoscript
+#!/bin/sh
+sed &#39;s/^#\s*Color$/Color/; s/^#\s*TotalDownload$/TotalDownload/&#39;
+
+$ sudo holo apply file:/etc/pacman.conf
+
+Working on file:/etc/pacman.conf
+  store at /var/lib/holo/files/base/etc/pacman.conf
+  passthru /usr/share/holo/files/20-enable-color/etc/pacman.conf.holoscript</code></pre><p>When writing the new target file, ownership and permissions will be copied from the target base, and thus from the original target file. Furthermore, a copy of the provisioned target file is written to <code>/var/lib/holo/files/provisioned/$target</code> for use by <code>holo diff file:$target</code>.</p><p>In normal operation, holo-files will refuse to operate on a target file that has been modified or deleted by the user or by another program. Apply <code>--force</code> to reset the target file to its defined state.</p><h2>Handling package upgrades</h2><p>Each target file is originally installed by an application package. When that application package is upgraded, system package managers usually detect that the file has been modified, and store the new version contained in the application package next to the target file, in paths such as</p><pre><code>$target.rpmnew          # for RPM    (Fedora, Mageia, openSUSE etc.)
+$target.dpkg-dist       # for dpkg   (Debian, Ubuntu etc.)
+$target.pacnew          # for pacman (Arch Linux etc.)
+$target.apk-new         # for APK    (Alpine Linux etc.)</code></pre><p>When this happens, the next <code>holo apply</code> run will detect this file and update its target base with this file:</p><pre><code>$ sudo pacman -Syu
+...
+installing pacman ...
+warning: /etc/pacman.conf installed as /etc/pacman.conf.pacnew
+...
+$ sudo holo apply file:/etc/pacman.conf
+
+Working on file:/etc/pacman.conf
+  store at /var/lib/holo/files/base/etc/pacman.conf
+  passthru /usr/share/holo/files/20-enable-color/etc/pacman.conf.holoscript
+
+&gt;&gt; found updated target base: /etc/pacman.conf.pacnew -&gt; /var/lib/holo/files/base/etc/pacman.conf</code></pre><p>(Unless disabled, it would not normally be nescessary to manually run <code>sudo holo apply</code> in the above example, as holo-files provides a pacman hook that causes pacman to automatically call <code>holo apply</code> to handle <code>.pacnew</code> files. This is not (yet) true for other package managers.)</p><p>This means that when configuration is applied as a holoscript on top of the default configuration, future updates to the default configuration will automatically be picked up, as long as <code>holo apply</code> is run after the system update.</p><p>When detecting these files, to know which suffixes to look for, holo-files inspects <code>ID</code> and <code>ID_LIKE</code> in <a href="https://www.man7.org/linux/man-pages/man5/os-release.5.html">os-release(5)</a> to determine which family the operating system belongs to, and thus which package manager is used. It currently recognizes <code>alpine</code>, <code>arch</code>, <code>debian</code>, <code>fedora</code> and <code>suse</code>.</p><h2>Handling package removal</h2><p>If there exist target bases below <code>/var/lib/holo/files</code> for which there are no corresponding resource files below <code>/usr/share/holo/files</code>, these target bases are considered <strong>orphaned</strong>.</p><p>This usually occurs because a package has been removed from the system, or because a different package version were installed that do not contain the resource files in question anymore.</p><p>There are two subcases to consider, if only configuration packages were deleted, <code>holo apply</code> will restore the target base (as installed by the application package):</p><pre><code>Scrubbing file:/etc/resourcefile-deleted.conf (all repository files were deleted)
+  restore /var/lib/holo/files/base/etc/resourcefile-deleted.conf</code></pre><p>If the application package (to whom the target file belongs) has also been deleted, the target base will be deleted instead of restored:</p><pre><code>Scrubbing file:/etc/targetfile-deleted.conf (target was deleted)
+   delete /var/lib/holo/files/base/etc/targetfile-deleted.conf</code></pre><p>This algorithm ensures that after any number of package installation and removal operations, a single <code>holo apply</code> will converge all old and new target files to the desired state.</p><h2>Dealing manual changes</h2><p><code>holo apply</code> will refuse to work on target files that have been modified by the user or another program, unless <code>--force</code> is given:</p><pre><code>$ sudo rm /etc/pacman.conf
+$ sudo vim /etc/ssh/sshd_config
+...
+$ sudo holo apply
+
+Working on file:/etc/pacman.conf
+  store at /var/lib/holo/files/base/etc/pacman.conf
+     apply /usr/share/holo/files/01-base/etc/pacman.conf
+
+!! skipping target: file has been deleted by user (use --force to restore)
+
+Working on file:/etc/ssh/sshd_config
+  store at /var/lib/holo/files/base/etc/ssh/sshd_config
+     apply /usr/share/holo/files/10-openssh/etc/ssh/sshd_config
+
+!! skipping target: file has been modified by user (use --force to restore)</code></pre><p>The <code>holo diff</code> command can be used to produce a diff between the last provisioned and the current state of the target files. <code>holo apply --force</code> can be used to reset the target files to their defined state.</p><h1>SEE ALSO</h1><p><a href="/man/holo.8.html">holo(8)</a> provides the user interface for using this plugin.</p><p><a href="https://www.man7.org/linux/man-pages/man5/os-release.5.html">os-release(5)</a></p><h1>AUTHOR</h1><p>Stefan Majewsky</p><p>Further documentation is available at the project homepage: <a href="https://holocm.org">https://holocm.org</a></p><p>Please report any issues and feature requests at GitHub: <a href="https://github.com/holocm/holo/issues">https://github.com/holocm/holo/issues</a></p></section>
+</body>

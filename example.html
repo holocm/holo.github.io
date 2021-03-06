@@ -3,8 +3,8 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Holo - Example</title>
-    <link rel="stylesheet" type="text/css" href="./site.css">
+    <title>Example - Holo</title>
+    <link rel="stylesheet" type="text/css" href="/site.css">
 </head>
 <body>
     <header>
@@ -13,62 +13,85 @@
             <a href="https://github.com/holocm" title="Fork on GitHub"><span class="logo logo-github"></span></a>
         </div>
         <div id="small-logo">
-            <a href="./index.html"><img src="img/holo-logo.svg"></a>
+            <a href="/index.html"><img src="/img/holo-logo.svg"></a>
         </div>
     </header>
-    <section>
-        <h1>How does Holo configure systems?</h1>
-        <p>Holo users ship configuration in packages, usually called &quot;holograms&quot;. These can be built with the regular package building tools (debuild, rpmbuild, makepkg, etc.) or with Holo's own <a href="https://github.com/holocm/holo-build">holo-build</a> tool that offers a much more pleasant syntax and process. Let's go through an example hologram that installs and starts an OpenSSH server and tweaks some of its configuration.</p>
-        <h2>The package declaration</h2>
-        <p>Package declarations for holo-build are <a href="https://github.com/toml-lang/toml">TOML</a> files.</p>
-        <pre>[package]
-name        = "hologram-openssh"
-version     = "1.0.0"
-description = "Start and configure OpenSSH"
-requires    = ["openssh"]</pre>
-        <p>Packages can install files, directories and symlinks. For example, we may want to start SSH only after the firewall is set up, so we create a configuration file for systemd.</p>
-        <pre>[[file]]
-path    = "/etc/systemd/system/sshd.service.d/hardened.conf"
-content = """
+    <nav>
+        <ul>
+            <li><a href="/example.html" class="self-link">Example</a></li>
+            <li><a href="/man/holo.8.html" class="">Docs</a></li>
+            <li><a href="/install.html" class="">Installation</a></li>
+        </ul>
+    </nav>
+    <section><h1>How does Holo configure systems?</h1>
+<p>Holo users ship configuration in packages, usually called &quot;holograms&quot;. These can be built with the regular package
+building tools (debuild, rpmbuild, makepkg, etc.) or with Holo's own <a href="https://github.com/holocm/holo-build">holo-build</a>
+tool that offers a much more pleasant syntax and process. Let's go through an example hologram that installs and starts
+an OpenSSH server and tweaks some of its configuration.</p>
+<h2>The package declaration</h2>
+<p>Package declarations for holo-build are <a href="https://github.com/toml-lang/toml">TOML files</a>.</p>
+<pre><code class="language-toml">[package]
+name        = &quot;hologram-openssh&quot;
+version     = &quot;1.0.0&quot;
+description = &quot;Start and configure OpenSSH&quot;
+requires    = [&quot;openssh&quot;]
+</code></pre>
+<p>Packages can install files, directories and symlinks. For example, we may want to start SSH only after the firewall is
+set up, so we create a configuration file for systemd.</p>
+<pre><code class="language-toml">[[file]]
+path    = &quot;/etc/systemd/system/sshd.service.d/hardened.conf&quot;
+content = &quot;&quot;&quot;
   [Unit]
   After=firewall.service
-"""</pre>
-        <p>We also want to disable password authentication. This one is a bit more tricky: We want to modify the configuration installed by the OpenSSH package, but the configuration is also a package, so it may not install the same file path. Instead, we install a script that Holo will later find and execute to update the default configuration.</p>
-        <pre>[[file]]
-path    = "/usr/share/holo/files/10-openssh/etc/ssh/sshd_config.holoscript"
-mode    = "0755"
-content = """
+&quot;&quot;&quot;
+</code></pre>
+<p>We also want to disable password authentication. This one is a bit more tricky: We want to modify the configuration
+installed by the OpenSSH package, but the configuration is also a package, so it may not install the same file path.
+Instead, we install a script that Holo will later find and execute to update the default configuration.</p>
+<pre><code class="language-toml">[[file]]
+path    = &quot;/usr/share/holo/files/10-openssh/etc/ssh/sshd_config.holoscript&quot;
+mode    = &quot;0755&quot;
+content = &quot;&quot;&quot;
   #!/bin/sh
   # stdin has the default config and stdout wants the updated config;
   # we just add a line at the bottom
   cat
-  echo "PasswordAuthentication no"
-"""</pre>
-        <p>Any file below <strong>/usr/share/holo</strong> will imply a dependency on the <strong>holo</strong> package.</p>
-        <p>When everything is set up, we start the daemon:</p>
-        <pre>[[action]]
-on     = "setup"
-script = """
+  echo &quot;PasswordAuthentication no&quot;
+&quot;&quot;&quot;
+</code></pre>
+<p>Any file below <code>/usr/share/holo</code> will imply a dependency on the <code>holo</code> package and have <code>holo apply</code> run
+automatically when the package is installed or removed.</p>
+<p>When everything is set up, we start the daemon:</p>
+<pre><code class="language-toml">[[action]]
+on     = &quot;setup&quot;
+script = &quot;&quot;&quot;
   systemctl daemon-reload
   systemctl enable sshd
   systemctl restart sshd
-"""</pre>
-        <h2>Rolling it out</h2>
-        <p>Once the package declaration is complete, a system package (.deb, .rpm, etc.) can be produced by <a href="https://github.com/holocm/holo-build">holo-build</a>. No extra tools needed.</p>
-        <pre>$ holo-build --debian hologram-openssh.pkg.toml</pre>
-        <p>Since we had files below <strong>/usr/share/holo</strong>, Holo will be installed as a dependency and <strong>holo apply</strong> will be executed during installation:</p>
-        <pre># dpkg -i hologram-openssh_1.0.0-1_any.deb
+&quot;&quot;&quot;
+</code></pre>
+<h2>Rolling it out</h2>
+<p>Once the package declaration is complete, a system package (.deb, .rpm, etc.) can be produced by
+<a href="https://github.com/holocm/holo-build">holo-build</a>. No extra tools needed.</p>
+<pre><code>$ holo-build --debian hologram-openssh.pkg.toml
+</code></pre>
+<p>Since we had files below <code>/usr/share/holo</code>, Holo will be installed as a dependency and <code>holo apply</code> will be executed
+during installation:</p>
+<pre><code># dpkg -i hologram-openssh_1.0.0-1_any.deb
 ...
 Working on file:/etc/ssh/sshd_config
   store at /var/lib/holo/files/base/etc/ssh/sshd_config
   passthru /usr/share/holo/files/10-openssh/etc/ssh/sshd_config.holoscript
-...</pre>
-        <p>This tells us that the default configuration has been modified as described by our holoscript. And indeed:</p>
-        <pre>$ tail -n1 /etc/ssh/sshd_config
-PasswordAuthentication no</pre>
-        <h2>Monitoring for changes</h2>
-        <p>When Holo provisions an entity (such as this config file), it will always store a <strong>base image</strong> describing the original state of the entity. If the entity is changed afterwards, Holo will be able to detect this change:</p>
-        <pre># sed -i '/PasswordAuthentication/ s/no/yes/' /etc/ssh/sshd_config
+...
+</code></pre>
+<p>This tells us that the default configuration has been modified as described by our holoscript. And indeed:</p>
+<pre><code>$ tail -n1 /etc/ssh/sshd_config
+PasswordAuthentication no
+</code></pre>
+<h2>Monitoring for changes</h2>
+<p>When Holo provisions an entity (such as this config file), it will always store a <strong>base image</strong> describing the original
+state of the entity. If the entity is changed afterwards, Holo will be able to detect this change:</p>
+<pre><code># sed -i '/PasswordAuthentication/ s/no/yes/' /etc/ssh/sshd_config
 # holo apply
 
 Working on file:/etc/ssh/sshd_config
@@ -84,10 +107,14 @@ Working on file:/etc/ssh/sshd_config
      #       ForceCommand cvs server
 
     -PasswordAuthentication no
-    +PasswordAuthentication yes</pre>
-        <h2>But wait, there's more!</h2>
-        <p>With <strong>plugins</strong>, Holo can be taught to provision other things than files. For example, there are plugins for <a href="https://github.com/holocm/holo-users-groups">user accounts, groups</a> or <a href="https://github.com/holocm/holo-ssh-keys">SSH public keys</a>. You can easily write your own plugins; they can be as small as <a href="https://github.com/holocm/holo/blob/master/cmd/holo-run-scripts">one shell script</a>.
-        <p>This example has demonstrated the holo-files plugin that ships with the <strong>holo</strong> tool itself, but it can only scratch the surface. Check out the <a href="https://github.com/holocm/holo/tree/master/doc/">man pages</a> for the full documentation. And don't forget to <a href="./install.html">install Holo</a> on your system, too.</p>
-    </section>
+    +PasswordAuthentication yes
+</code></pre>
+<h2>But wait, there's more!</h2>
+<p>With <strong>plugins</strong>, Holo can be taught to provision other things than files. For example, there are plugins for
+<a href="https://github.com/holocm/holo-users-groups">user accounts, groups</a> or
+<a href="https://github.com/holocm/holo-ssh-keys">SSH public keys</a>. You can easily write your own plugins; they can be as small
+as <a href="https://github.com/holocm/holo/blob/master/cmd/holo-run-scripts">one shell script</a>.</p>
+<p>This example has demonstrated the holo-files plugin that ships with Holo itself, but it can only scratch the surface.
+Check out the <a href="https://github.com/holocm/holo/tree/master/doc/">man pages</a> for the full documentation. And
+gon't forget to <a href="./install.html">install Holo</a> on your system, too.</section>
 </body>
-</html>

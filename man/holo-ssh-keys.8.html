@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>holo-ssh-keys(8)</title>
+    <link rel="stylesheet" type="text/css" href="/site.css">
+</head>
+<body>
+    <header>
+        <div id="header-buttons">
+            <a href="https://twitter.com/holocm" title="Follow on Twitter"><span class="logo logo-twitter"></span></a>
+            <a href="https://github.com/holocm" title="Fork on GitHub"><span class="logo logo-github"></span></a>
+        </div>
+        <div id="small-logo">
+            <a href="/index.html"><img src="/img/holo-logo.svg"></a>
+        </div>
+    </header>
+    <nav>
+        <ul>
+            <li><a href="/example.html" class="">Example</a></li>
+            <li><a href="/man/holo.8.html" class="self-link">Docs</a></li>
+            <li><a href="/install.html" class="">Installation</a></li>
+        </ul>
+    </nav>
+    <nav class="secondary">
+        <ul>
+            <li><a href="/man/holo.8.html" class="">holo(8)</a></li>
+            <li><a href="/man/holo-build.8.html" class="">holo-build(8)</a></li>
+            <li><a href="/man/holo-files.8.html" class="">holo-files(8)</a></li>
+            <li><a href="/man/holo-generators.7.html" class="">holo-generators(7)</a></li>
+            <li><a href="/man/holo-plugin-interface.7.html" class="">holo-plugin-interface(7)</a></li>
+            <li><a href="/man/holo-run-scripts.8.html" class="">holo-run-scripts(8)</a></li>
+            <li><a href="/man/holo-ssh-keys.8.html" class="self-link">holo-ssh-keys(8)</a></li>
+            <li><a href="/man/holo-test.7.html" class="">holo-test(7)</a></li>
+            <li><a href="/man/holo-users-groups.8.html" class="">holo-users-groups(8)</a></li>
+            <li><a href="/man/holorc.5.html" class="">holorc(5)</a></li>
+        </ul>
+    </nav>
+    <section><h1>NAME</h1><p>holo-ssh-keys - Holo plugin to provision <code>.ssh/authorized_keys</code></p><h1>DESCRIPTION</h1><p>This plugin provisions SSH keys into the <code>$HOME/.ssh/authorized_keys</code> of a user. Key files are found at <code>/usr/share/holo/ssh-keys/$user/$ident.pub</code>, where <code>$user</code> is the name of the user whose <code>authorized_keys</code> will be edited. Each key file is an entity within Holo, with the entity name <code>ssh-keyset:$user/$ident</code>. For example:</p><pre><code>$ holo scan ssh-keyset:john-doe/login
+
+ssh-keyset:john-doe/login
+    found in /usr/share/holo/ssh-keys/john-doe/login.pub
+      key is 2048 SHA256:vogJG+8rxIB80hEp8OCJLUQgtfOajXHudPp6YvDvY8W john@example.org (RSA)</code></pre><p>The last information line contains the output of <code>ssh-keygen -l</code>. If the file contains multiple public keys, there will appear one such line per key.</p><p>The format of SSH public key files is documented in <a href="https://www.man7.org/linux/man-pages/man8/sshd.8.html">sshd(8)</a> in the section <em>authorized_keys file format</em>.</p><h2>Apply operation</h2><p>When a key file is applied, all keys in it will be added to <code>.ssh/authorized_keys</code> (unless already present). To track which keys were provisioned by Holo, the comment field of the key is replaced by <code>holo=$entity_name</code>.</p><p>Applying a key file entity will also remove all keys from <code>.ssh/authorized_keys</code> which are tagged with this entity name, but are not present in the resource file for this entity. Keys can thus be replaced in or removed from the key file, and all changes will be propagated into <code>.ssh/authorized_keys</code> automatically (without requiring <code>--force</code>).</p><h1>SEE ALSO</h1><p><a href="/man/holo.8.html">holo(8)</a> provides the user interface for using this plugin.</p><h1>AUTHOR</h1><p>Stefan Majewsky</p><p>Further documentation is available at the project homepage: <a href="https://holocm.org">https://holocm.org</a></p><p>Please report any issues and feature requests at GitHub: <a href="https://github.com/holocm/holo/issues">https://github.com/holocm/holo/issues</a></p></section>
+</body>
