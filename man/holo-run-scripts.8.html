@@ -19,7 +19,22 @@
     <nav>
         <ul>
             <li><a href="/example.html" class="">Example</a></li>
+            <li><a href="/man/holo.8.html" class="self-link">Docs</a></li>
             <li><a href="/install.html" class="">Installation</a></li>
+        </ul>
+    </nav>
+    <nav class="secondary">
+        <ul>
+            <li><a href="/man/holo.8.html" class="">holo(8)</a></li>
+            <li><a href="/man/holo-build.8.html" class="">holo-build(8)</a></li>
+            <li><a href="/man/holo-files.8.html" class="">holo-files(8)</a></li>
+            <li><a href="/man/holo-generators.7.html" class="">holo-generators(7)</a></li>
+            <li><a href="/man/holo-plugin-interface.7.html" class="">holo-plugin-interface(7)</a></li>
+            <li><a href="/man/holo-run-scripts.8.html" class="self-link">holo-run-scripts(8)</a></li>
+            <li><a href="/man/holo-ssh-keys.8.html" class="">holo-ssh-keys(8)</a></li>
+            <li><a href="/man/holo-test.7.html" class="">holo-test(7)</a></li>
+            <li><a href="/man/holo-users-groups.8.html" class="">holo-users-groups(8)</a></li>
+            <li><a href="/man/holorc.5.html" class="">holorc(5)</a></li>
         </ul>
     </nav>
     <section><h1>NAME</h1><p>holo-run-scripts - Holo plugin to run custom provisioning scripts</p><h1>DESCRIPTION</h1><p>This plugin can be used to run custom provisioning scripts during <code>holo apply</code>. Scripts must be intalled into the directory <code>/usr/share/holo/run-scripts</code> and must be executable. Instead of a script, a binary, or a symlink to a script or binary, can also be installed. Scripts will be executed in alphabetical order.</p><p>The entity name for a script is <code>script:$name</code>, where <code>$name</code> is the basename of the file.</p><h2>Diff</h2><p>Holo cannot compute a meaningful diff for the effect of an arbitrary script, so <code>holo diff script:$name</code> will not produce any output.</p><h1>SEE ALSO</h1><p><span style="color:red">UNKNOWN {"type":"L","attrs":{"content-implicit":"yes","raw":"holo(8)","to":"holo(8)","type":"man"},"content":"holo(8)"}</span> provides the user interface for using this plugin.</p><h1>AUTHOR</h1><p>Stefan Majewsky</p><p>Further documentation is available at the project homepage: <a href="https://holocm.org">https://holocm.org</a></p><p>Please report any issues and feature requests at GitHub: <a href="https://github.com/holocm/holo/issues">https://github.com/holocm/holo/issues</a></p></section>

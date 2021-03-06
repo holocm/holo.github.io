@@ -19,7 +19,22 @@
     <nav>
         <ul>
             <li><a href="/example.html" class="">Example</a></li>
+            <li><a href="/man/holo.8.html" class="self-link">Docs</a></li>
             <li><a href="/install.html" class="">Installation</a></li>
+        </ul>
+    </nav>
+    <nav class="secondary">
+        <ul>
+            <li><a href="/man/holo.8.html" class="">holo(8)</a></li>
+            <li><a href="/man/holo-build.8.html" class="">holo-build(8)</a></li>
+            <li><a href="/man/holo-files.8.html" class="">holo-files(8)</a></li>
+            <li><a href="/man/holo-generators.7.html" class="">holo-generators(7)</a></li>
+            <li><a href="/man/holo-plugin-interface.7.html" class="self-link">holo-plugin-interface(7)</a></li>
+            <li><a href="/man/holo-run-scripts.8.html" class="">holo-run-scripts(8)</a></li>
+            <li><a href="/man/holo-ssh-keys.8.html" class="">holo-ssh-keys(8)</a></li>
+            <li><a href="/man/holo-test.7.html" class="">holo-test(7)</a></li>
+            <li><a href="/man/holo-users-groups.8.html" class="">holo-users-groups(8)</a></li>
+            <li><a href="/man/holorc.5.html" class="">holorc(5)</a></li>
         </ul>
     </nav>
     <section><h1>NAME</h1><p>holo-plugin-interface - API specification for Holo plugins</p><h1>DESCRIPTION</h1><p>Holo can leverage plugins to provision previously unknown entity types. For example, given a hypothetical &#34;FooSQL&#34; database, someone could implement a plugin for Holo that provisions FooSQL databases or database users. This document describes the interface that Holo uses to find, invoke, and communicate with its plugins.</p><p>This interface is deliberately designed around classic files and text streams, so that it can easily be implemented even by shell scripts without needing to resort to complex parser libraries.</p><p>This document describes <strong>version 3</strong> of the Holo plugin interface.</p><p>The key words &#34;MUST&#34;, &#34;MUST NOT&#34;, &#34;REQUIRED&#34;, &#34;SHALL&#34;, &#34;SHALL NOT&#34;, &#34;SHOULD&#34;, &#34;SHOULD NOT&#34;, &#34;RECOMMENDED&#34;, &#34;MAY&#34;, and &#34;OPTIONAL&#34; in this document are to be interpreted as described in <a href="https://tools.ietf.org/html/rfc2119">RFC 2119</a>.</p><h2>Plugin discovery</h2><p>Each plugin MUST have an ID following the format <code>[a-z0-9][a-z0-9-]*</code>. When choosing the plugin ID, redundant verbs like <code>manage</code> or <code>provision</code> SHOULD be avoided. A good plugin ID is just the name of the software being configured by the plugin. For example, an appropriate plugin ID for the aforementioned FooSQL plugin would be <code>foosql</code>. The things provisioned MAY be referenced in plural form if disambiguation is required. For example, if FooSQL is configured by multiple plugins, appropriate plugin IDs could include <code>foosql-databases</code> and <code>foosql-users</code>.</p><p>Plugins are not discovered automatically. They MUST be referenced in <code>$HOLO_ROOT_DIR/etc/holorc</code> or <code>$HOLO_ROOT_DIR/etc/holorc.d/*</code> (see <span style="color:red">UNKNOWN {"type":"L","attrs":{"content-implicit":"yes","raw":"holorc(5)","to":"holorc(5)","type":"man"},"content":"holorc(5)"}</span>) by adding the line in one of the following forms:</p><pre><code>plugin $PLUGIN_ID

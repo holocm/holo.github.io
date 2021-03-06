@@ -19,7 +19,22 @@
     <nav>
         <ul>
             <li><a href="/example.html" class="">Example</a></li>
+            <li><a href="/man/holo.8.html" class="self-link">Docs</a></li>
             <li><a href="/install.html" class="">Installation</a></li>
+        </ul>
+    </nav>
+    <nav class="secondary">
+        <ul>
+            <li><a href="/man/holo.8.html" class="">holo(8)</a></li>
+            <li><a href="/man/holo-build.8.html" class="">holo-build(8)</a></li>
+            <li><a href="/man/holo-files.8.html" class="self-link">holo-files(8)</a></li>
+            <li><a href="/man/holo-generators.7.html" class="">holo-generators(7)</a></li>
+            <li><a href="/man/holo-plugin-interface.7.html" class="">holo-plugin-interface(7)</a></li>
+            <li><a href="/man/holo-run-scripts.8.html" class="">holo-run-scripts(8)</a></li>
+            <li><a href="/man/holo-ssh-keys.8.html" class="">holo-ssh-keys(8)</a></li>
+            <li><a href="/man/holo-test.7.html" class="">holo-test(7)</a></li>
+            <li><a href="/man/holo-users-groups.8.html" class="">holo-users-groups(8)</a></li>
+            <li><a href="/man/holorc.5.html" class="">holorc(5)</a></li>
         </ul>
     </nav>
     <section><h1>NAME</h1><p>holo-files - Holo plugin to provision files</p><h1>DESCRIPTION</h1><p>When using Holo, configuration is usually stored in system packages, so files can be provisioned by just including them in a configuration package. This plugin extends this basic capability to allow one package (a configuration package) to overwrite or modify a file that has been installed by another package (an application package).</p><h2>Structure of the resource directory</h2><p>Configuration packages that want to use this plugin must place files in the resource directory at <code>/usr/share/holo/files</code>. Each <strong>resource</strong> file works on a certain <strong>target</strong>, as determined by its file name:</p><pre><code>/usr/share/holo/files/20-webserver/etc/nginx/nginx.conf

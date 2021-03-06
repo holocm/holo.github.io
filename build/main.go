@@ -27,6 +27,7 @@ import (
 	"math"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 	"unicode"
 
@@ -48,10 +49,11 @@ func main() {
 	}
 
 	//render HTML from manpages
-	paths, err = filepath.Glob("build/man/*.json")
-	must(err)
-	for _, path := range paths {
-		loadPageFromManpageJSON(path).Render(tmpl)
+	allManpages := findManpages()
+	for _, manpage := range allManpages {
+		page := loadPageFromManpageJSON(manpage)
+		page.AllManpages = allManpages
+		page.Render(tmpl)
 	}
 }
 
@@ -68,6 +70,8 @@ type page struct {
 	OutPath string
 	Title   string
 	Content template.HTML
+	//if present, causes the manpage subnavigation to render
+	AllManpages []manpageInfo
 }
 
 func (p page) Render(tmpl *template.Template) {
@@ -116,17 +120,41 @@ func loadPageFromMarkdown(path string) page {
 ////////////////////////////////////////////////////////////////////////////////
 // pages from manpage (Perl POD -> JSON AST -> HTML)
 
-func loadPageFromManpageJSON(path string) page {
-	jsonBytes, err := ioutil.ReadFile(path)
+type manpageInfo struct {
+	OutPath string
+	Title   string
+	Section string
+}
+
+func findManpages() (result []manpageInfo) {
+	paths, err := filepath.Glob("build/man/*.json")
+	must(err)
+
+	for _, path := range paths {
+		baseName := strings.TrimSuffix(filepath.Base(path), ".json")
+		baseNameFields := strings.Split(baseName, ".")
+		result = append(result, manpageInfo{
+			OutPath: fmt.Sprintf("man/%s.html", baseName),
+			Title:   baseNameFields[0],
+			Section: baseNameFields[1],
+		})
+	}
+
+	sort.Slice(result, func(i, j int) bool {
+		return result[i].Title < result[j].Title
+	})
+	return result
+}
+
+func loadPageFromManpageJSON(info manpageInfo) page {
+	jsonBytes, err := ioutil.ReadFile(fmt.Sprintf("build/man/%s.%s.json", info.Title, info.Section))
 	must(err)
 	var doc docNode
 	must(json.Unmarshal(jsonBytes, &doc))
 
-	baseName := strings.TrimSuffix(filepath.Base(path), ".json")
-	baseNameFields := strings.Split(baseName, ".")
 	return page{
-		OutPath: fmt.Sprintf("man/%s.html", baseName),
-		Title:   fmt.Sprintf("%s(%s)", baseNameFields[0], baseNameFields[1]),
+		OutPath: info.OutPath,
+		Title:   fmt.Sprintf("%s(%s)", info.Title, info.Section),
 		Content: template.HTML(doc.ToHTML()),
 	}
 }

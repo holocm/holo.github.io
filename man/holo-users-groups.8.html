@@ -19,7 +19,22 @@
     <nav>
         <ul>
             <li><a href="/example.html" class="">Example</a></li>
+            <li><a href="/man/holo.8.html" class="self-link">Docs</a></li>
             <li><a href="/install.html" class="">Installation</a></li>
+        </ul>
+    </nav>
+    <nav class="secondary">
+        <ul>
+            <li><a href="/man/holo.8.html" class="">holo(8)</a></li>
+            <li><a href="/man/holo-build.8.html" class="">holo-build(8)</a></li>
+            <li><a href="/man/holo-files.8.html" class="">holo-files(8)</a></li>
+            <li><a href="/man/holo-generators.7.html" class="">holo-generators(7)</a></li>
+            <li><a href="/man/holo-plugin-interface.7.html" class="">holo-plugin-interface(7)</a></li>
+            <li><a href="/man/holo-run-scripts.8.html" class="">holo-run-scripts(8)</a></li>
+            <li><a href="/man/holo-ssh-keys.8.html" class="">holo-ssh-keys(8)</a></li>
+            <li><a href="/man/holo-test.7.html" class="">holo-test(7)</a></li>
+            <li><a href="/man/holo-users-groups.8.html" class="self-link">holo-users-groups(8)</a></li>
+            <li><a href="/man/holorc.5.html" class="">holorc(5)</a></li>
         </ul>
     </nav>
     <section><h1>NAME</h1><p>holo-users-groups - Holo plugin to provision user accounts and groups</p><h1>DESCRIPTION</h1><p>This plugin provisions UNIX user accounts to <span style="color:red">UNKNOWN {"type":"L","attrs":{"content-implicit":"yes","raw":"passwd(5)","to":"passwd(5)","type":"man"},"content":"passwd(5)"}</span>, and groups to <span style="color:red">UNKNOWN {"type":"L","attrs":{"content-implicit":"yes","raw":"group(5)","to":"group(5)","type":"man"},"content":"group(5)"}</span>. Provisioning uses the standard commands <span style="color:red">UNKNOWN {"type":"L","attrs":{"content-implicit":"yes","raw":"useradd(8)","to":"useradd(8)","type":"man"},"content":"useradd(8)"}</span>, <span style="color:red">UNKNOWN {"type":"L","attrs":{"content-implicit":"yes","raw":"usermod(8)","to":"usermod(8)","type":"man"},"content":"usermod(8)"}</span>, <span style="color:red">UNKNOWN {"type":"L","attrs":{"content-implicit":"yes","raw":"userdel(8)","to":"userdel(8)","type":"man"},"content":"userdel(8)"}</span>, <span style="color:red">UNKNOWN {"type":"L","attrs":{"content-implicit":"yes","raw":"groupadd(8)","to":"groupadd(8)","type":"man"},"content":"groupadd(8)"}</span>, <span style="color:red">UNKNOWN {"type":"L","attrs":{"content-implicit":"yes","raw":"groupmod(8)","to":"groupmod(8)","type":"man"},"content":"groupmod(8)"}</span> and <span style="color:red">UNKNOWN {"type":"L","attrs":{"content-implicit":"yes","raw":"groupdel(8)","to":"groupdel(8)","type":"man"},"content":"groupdel(8)"}</span>.</p><p>Entity definitions are placed at <code>/usr/share/holo/users-groups/*.toml</code> and are written in TOML. The following fields are accepted for users and groups:</p><pre><code>[[group]]

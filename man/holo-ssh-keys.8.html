@@ -19,7 +19,22 @@
     <nav>
         <ul>
             <li><a href="/example.html" class="">Example</a></li>
+            <li><a href="/man/holo.8.html" class="self-link">Docs</a></li>
             <li><a href="/install.html" class="">Installation</a></li>
+        </ul>
+    </nav>
+    <nav class="secondary">
+        <ul>
+            <li><a href="/man/holo.8.html" class="">holo(8)</a></li>
+            <li><a href="/man/holo-build.8.html" class="">holo-build(8)</a></li>
+            <li><a href="/man/holo-files.8.html" class="">holo-files(8)</a></li>
+            <li><a href="/man/holo-generators.7.html" class="">holo-generators(7)</a></li>
+            <li><a href="/man/holo-plugin-interface.7.html" class="">holo-plugin-interface(7)</a></li>
+            <li><a href="/man/holo-run-scripts.8.html" class="">holo-run-scripts(8)</a></li>
+            <li><a href="/man/holo-ssh-keys.8.html" class="self-link">holo-ssh-keys(8)</a></li>
+            <li><a href="/man/holo-test.7.html" class="">holo-test(7)</a></li>
+            <li><a href="/man/holo-users-groups.8.html" class="">holo-users-groups(8)</a></li>
+            <li><a href="/man/holorc.5.html" class="">holorc(5)</a></li>
         </ul>
     </nav>
     <section><h1>NAME</h1><p>holo-ssh-keys - Holo plugin to provision <code>.ssh/authorized_keys</code></p><h1>DESCRIPTION</h1><p>This plugin provisions SSH keys into the <code>$HOME/.ssh/authorized_keys</code> of a user. Key files are found at <code>/usr/share/holo/ssh-keys/$user/$ident.pub</code>, where <code>$user</code> is the name of the user whose <code>authorized_keys</code> will be edited. Each key file is an entity within Holo, with the entity name <code>ssh-keyset:$user/$ident</code>. For example:</p><pre><code>$ holo scan ssh-keyset:john-doe/login

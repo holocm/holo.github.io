@@ -111,6 +111,11 @@ nav {
     min-height: 2rem;
 }
 
+nav.secondary {
+    background: #CCC;
+    color: black;
+}
+
 nav > ul {
     width: 60rem;
     max-width: calc(100vw - 20px); /* leave some space for scrollbar */
@@ -124,6 +129,7 @@ nav > ul > li {
     margin: 0;
     padding: 0;
     line-height: 2rem;
+    white-space: nowrap;
 }
 
 nav > ul > li + li:before {
