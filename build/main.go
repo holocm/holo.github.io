@@ -184,7 +184,21 @@ func (n docNode) ToHTML() string {
 		return fmt.Sprintf(`<pre><code>%s</code></pre>`, n.ChildrenToHTML())
 	case "__TEXT__":
 		return template.HTMLEscapeString(n.Attrs["text"])
+	case "L":
+		switch n.Attrs["type"] {
+		case "url":
+			href := template.HTMLEscapeString(n.Attrs["to"])
+			return fmt.Sprintf(`<a href=%q>%s</a>`, href, n.ChildrenToHTML())
+		}
+		fallthrough
 	default:
-		return fmt.Sprintf(`<span style="color:red">Unknown node type %s</span>`, template.HTMLEscapeString(n.Type))
+		//unknown node type -> dump contents as red text to make it stand out
+		contents := struct {
+			Type    string            `json:"type"`
+			Attrs   map[string]string `json:"attrs"`
+			Content string            `json:"content"`
+		}{n.Type, n.Attrs, template.HTMLEscapeString(n.ChildrenToHTML())}
+		contentsJSON, _ := json.Marshal(contents)
+		return fmt.Sprintf(`<span style="color:red">UNKNOWN %s</span>`, string(contentsJSON))
 	}
 }
