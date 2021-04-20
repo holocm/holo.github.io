@@ -122,5 +122,5 @@ With **plugins**, Holo can be taught to provision other things than files. For e
 as [one shell script](https://github.com/holocm/holo/blob/master/cmd/holo-run-scripts).
 
 This example has demonstrated the holo-files plugin that ships with Holo itself, but it can only scratch the surface.
-Check out the [man pages](https://github.com/holocm/holo/tree/master/doc/) for the full documentation. And
+Check out the [man pages](./man/holo.8.html) for the full documentation. And
 gon't forget to [install Holo](./install.html) on your system, too.
