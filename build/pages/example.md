@@ -123,4 +123,4 @@ as [one shell script](https://github.com/holocm/holo/blob/master/cmd/holo-run-sc
 
 This example has demonstrated the holo-files plugin that ships with Holo itself, but it can only scratch the surface.
 Check out the [man pages](./man/holo.8.html) for the full documentation. And
-gon't forget to [install Holo](./install.html) on your system, too.
+don't forget to [install Holo](./install.html) on your system, too.
